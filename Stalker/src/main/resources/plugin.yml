@@ -1,0 +1,4 @@
+name: Stalker
+version: '1.0-SNAPSHOT'
+main: greefox.stalker.Stalker
+api-version: '1.21'
