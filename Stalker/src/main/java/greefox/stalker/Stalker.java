@@ -26,7 +26,6 @@ public class Stalker extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        //spawnStalker(Bukkit.getPlayer("GreeFox")); // Replace with dynamic player detection
         for (Player target : Bukkit.getOnlinePlayers()) {
             target.sendMessage("1");
         }
@@ -97,7 +96,7 @@ public class Stalker extends JavaPlugin {
                     }
                     if (Math.random() < 0.5) {
                         Location look = stalkerLocation.clone().add(0,1,0);
-                        stalker.getWorld().spawnParticle(Particle.SOUL, look, 20, 0d, 0d, 0d);
+                        stalker.getWorld().spawnParticle(Particle.FALLING_LAVA, look, 10, 0d, 0d, 0d);
                     }
                 }
 
