@@ -70,7 +70,6 @@ public class Cross implements Listener {
 
 
     private void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {
-        // Locate the schematic format (e.g., Sponge)
         ClipboardFormat format = ClipboardFormats.findByAlias("sponge.3");
         if (format == null) {
             player.sendMessage("Error: Unsupported schematic format!");
@@ -78,22 +77,17 @@ public class Cross implements Listener {
         }
         Location surface = findSurfaceLocation(player.getLocation(), 20);
 
-        // Load the schematic file
         try (ClipboardReader reader = format.getReader(new FileInputStream(cross_top))) {
             Clipboard clipboard = reader.read();
 
-            // Create an EditSession and paste the schematic
             try (EditSession editSession = WorldEdit.getInstance()
                     .getEditSessionFactory()
                     .getEditSession(bWorld, -1)) {
 
                 if (surface != null) {
 
-                    // Convert the Location to a BlockVector3
                     BlockVector3 surfaceVector = BlockVector3.at(surface.getBlockX(), surface.getBlockY(), surface.getBlockZ());
 
-
-                    // Paste the schematic
                     ClipboardHolder holder = new ClipboardHolder(clipboard);
 
                     Operation operation = holder.createPaste(editSession)
@@ -116,25 +110,16 @@ public class Cross implements Listener {
         //load middle part
 
         try (ClipboardReader reader = format.getReader(new FileInputStream(cross_middle))) {
-            player.sendMessage("1");
             Clipboard clipboard = reader.read();
 
-            // Create an EditSession and paste the schematic
             try (EditSession editSession = WorldEdit.getInstance()
                     .getEditSessionFactory()
                     .getEditSession(bWorld, -1)) {
 
-
-                player.sendMessage("10");
-
                 if (surface != null) {
-                    player.sendMessage("100");
 
-                    // Convert the Location to a BlockVector3
                     BlockVector3 surfaceVector = BlockVector3.at(surface.getBlockX(), surface.getBlockY(), surface.getBlockZ());
 
-
-                    // Paste the schematic
                     ClipboardHolder holder = new ClipboardHolder(clipboard);
 
                     Operation operation = holder.createPaste(editSession)
@@ -144,7 +129,6 @@ public class Cross implements Listener {
                             .build();
 
                     Operations.complete(operation);
-                    player.sendMessage("1000");
                 }
             } catch (WorldEditException e) {
                 player.sendMessage("Error during schematic pasting: " + e.getMessage());
@@ -157,15 +141,11 @@ public class Cross implements Listener {
 
         //load the down part
         try (ClipboardReader reader = format.getReader(new FileInputStream(cross_bottom))) {
-            player.sendMessage("2");
             Clipboard clipboard = reader.read();
 
-            // Create an EditSession and paste the schematic
             try (EditSession editSession = WorldEdit.getInstance()
                     .getEditSessionFactory()
                     .getEditSession(bWorld, -1)) {
-
-
 
                 if (surface != null) {
                     BlockVector3 surfaceVector = BlockVector3.at(surface.getBlockX(), surface.getBlockY(), surface.getBlockZ());
@@ -198,23 +178,16 @@ public class Cross implements Listener {
 
             //load tnt
             try (ClipboardReader reader = format.getReader(new FileInputStream(cross_tnt))) {
-                player.sendMessage("2");
                 Clipboard clipboard = reader.read();
 
-                // Create an EditSession and paste the schematic
                 try (EditSession editSession = WorldEdit.getInstance()
                         .getEditSessionFactory()
                         .getEditSession(bWorld, -1)) {
 
-
-
                     if (surface != null) {
 
-                        // Convert the Location
                         BlockVector3 surfaceVector = BlockVector3.at(surface.getBlockX(), surface.getBlockY(), surface.getBlockZ());
 
-
-                        // Paste the schematic
                         ClipboardHolder holder = new ClipboardHolder(clipboard);
 
                         Operation operation = holder.createPaste(editSession)
@@ -224,7 +197,6 @@ public class Cross implements Listener {
                                 .build();
 
                         Operations.complete(operation);
-                        player.sendMessage("1000");
                     }
                 } catch (WorldEditException e) {
                     player.sendMessage("Error during schematic pasting: " + e.getMessage());
@@ -243,13 +215,11 @@ public class Cross implements Listener {
         int startZ = startLocation.getBlockZ();
         World world = startLocation.getWorld();
 
-        // Loop through a square area around the start location
         for (int x = -searchRadius; x <= searchRadius; x++) {
             for (int z = -searchRadius; z <= searchRadius; z++) {
                 // Get the highest block at the current X and Z coordinates
                 Location topLocation = world.getHighestBlockAt(startX + x, startZ + z).getLocation();
 
-                // Adjust to get the block directly above the surface
                 Location blockBelow = topLocation.clone().subtract(0, 1, 0);
                 Location blockAt = topLocation.clone();
                 Location blockX = topLocation.clone().add(1, -1, 0);
@@ -257,19 +227,16 @@ public class Cross implements Listener {
                 Location blockmX = topLocation.clone().add(-1, -1, 0);
                 Location blockmY = topLocation.clone().add(0, -1, -1);
 
-
-                // Check if it's a valid surface location
                 if (isValidSurfaceLocation(blockBelow, blockAt, blockX, blockY, blockmX, blockmY)) {
-                    return blockAt.clone().add(0, 1, 0); // Return the first valid surface location
+                    return blockAt.clone().add(0, 1, 0);
                 }
             }
         }
 
-        return null; // No valid location found within the radius
+        return null;
     }
 
     private boolean isValidSurfaceLocation(Location blockBelow, Location blockAt, Location blockX, Location blockY, Location blockmX, Location blockmY) {
-        // Ensure the block below is solid, and the current and above blocks are air
         return blockBelow.getBlock().getType().isSolid()
                 && blockAt.getBlock().getType().isSolid()
                 && !blockAt.getBlock().getType().isBurnable()
@@ -278,7 +245,6 @@ public class Cross implements Listener {
                 && blockmX.getBlock().getType().isSolid()
                 && blockmY.getBlock().getType().isSolid();
     }
-
 
     private void addLootToSpecificBarrel(Location origin, int targetX, int targetY, int targetZ) {
         Location barrelLocation = origin.clone().add(targetX, targetY, targetZ);
