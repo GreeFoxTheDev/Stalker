@@ -48,7 +48,6 @@ public class Stalker extends JavaPlugin implements Listener {
 
     private File dungeon_stalker = new File(getDataFolder(), "structures/dungeon_stalker.schem");
 
-
     private void create_dungeon_stalker() {
         dungeon_stalker = new File(getDataFolder(), "structures/dungeon_stalker.schem");
         if (!dungeon_stalker.exists()) {
@@ -58,7 +57,6 @@ public class Stalker extends JavaPlugin implements Listener {
     }
 
     public File cross_top = new File(getDataFolder(), "structures/cross_top.schem");
-
 
     private void create_cross_top() {
         cross_top = new File(getDataFolder(), "structures/cross_top.schem");
@@ -70,7 +68,6 @@ public class Stalker extends JavaPlugin implements Listener {
 
     public File cross_middle = new File(getDataFolder(), "structures/cross_middle.schem");
 
-
     private void create_cross_middle() {
         cross_middle = new File(getDataFolder(), "structures/cross_middle.schem");
         if (!cross_middle.exists()) {
@@ -80,12 +77,21 @@ public class Stalker extends JavaPlugin implements Listener {
     }
     public File cross_bottom = new File(getDataFolder(), "structures/cross_bottom.schem");
 
-
     private void create_cross_bottom() {
         cross_bottom = new File(getDataFolder(), "structures/cross_bottom.schem");
         if (!cross_bottom.exists()) {
             cross_bottom.getParentFile().mkdirs();
             saveResource("structures/cross_bottom.schem", false);
+        }
+    }
+
+    public File cross_tnt = new File(getDataFolder(), "structures/cross_tnt.schem");
+
+    private void create_cross_tnt() {
+        cross_tnt = new File(getDataFolder(), "structures/cross_tnt.schem");
+        if (!cross_tnt.exists()) {
+            cross_tnt.getParentFile().mkdirs();
+            saveResource("structures/cross_tnt.schem", false);
         }
     }
 
@@ -97,6 +103,7 @@ public class Stalker extends JavaPlugin implements Listener {
         create_cross_top();
         create_cross_middle();
         create_cross_bottom();
+        create_cross_tnt();
 
 
 

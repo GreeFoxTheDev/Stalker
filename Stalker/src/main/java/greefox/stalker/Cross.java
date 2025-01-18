@@ -42,6 +42,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Cross implements Listener {
 
@@ -64,6 +65,8 @@ public class Cross implements Listener {
     public File cross_top = new File(Stalker.getInstance().getDataFolder(), "structures/cross_top.schem");
     public File cross_middle = new File(Stalker.getInstance().getDataFolder(), "structures/cross_middle.schem");
     public File cross_bottom = new File(Stalker.getInstance().getDataFolder(), "structures/cross_bottom.schem");
+    public File cross_tnt = new File(Stalker.getInstance().getDataFolder(), "structures/cross_tnt.schem");
+
 
 
     private void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {
@@ -163,16 +166,10 @@ public class Cross implements Listener {
                     .getEditSession(bWorld, -1)) {
 
 
-                player.sendMessage("20");
 
                 if (surface != null) {
-                    player.sendMessage("200");
-
-                    // Convert the Location to a BlockVector3
                     BlockVector3 surfaceVector = BlockVector3.at(surface.getBlockX(), surface.getBlockY(), surface.getBlockZ());
 
-
-                    // Paste the schematic
                     ClipboardHolder holder = new ClipboardHolder(clipboard);
 
                     Operation operation = holder.createPaste(editSession)
@@ -182,7 +179,6 @@ public class Cross implements Listener {
                             .build();
 
                     Operations.complete(operation);
-                    player.sendMessage("1000");
                 }
             } catch (WorldEditException e) {
                 player.sendMessage("Error during schematic pasting: " + e.getMessage());
@@ -191,6 +187,55 @@ public class Cross implements Listener {
         } catch (IOException e) {
             player.sendMessage("Error loading schematic: " + e.getMessage());
             throw e;
+        }
+
+
+        double chance = 50.0;
+
+        double randomValue = ThreadLocalRandom.current().nextDouble(100);
+
+        if (randomValue < chance) {
+
+            //load tnt
+            try (ClipboardReader reader = format.getReader(new FileInputStream(cross_tnt))) {
+                player.sendMessage("2");
+                Clipboard clipboard = reader.read();
+
+                // Create an EditSession and paste the schematic
+                try (EditSession editSession = WorldEdit.getInstance()
+                        .getEditSessionFactory()
+                        .getEditSession(bWorld, -1)) {
+
+
+
+                    if (surface != null) {
+
+                        // Convert the Location
+                        BlockVector3 surfaceVector = BlockVector3.at(surface.getBlockX(), surface.getBlockY(), surface.getBlockZ());
+
+
+                        // Paste the schematic
+                        ClipboardHolder holder = new ClipboardHolder(clipboard);
+
+                        Operation operation = holder.createPaste(editSession)
+                                .to(surfaceVector)
+                                .ignoreAirBlocks(true)
+                                .copyEntities(false)
+                                .build();
+
+                        Operations.complete(operation);
+                        player.sendMessage("1000");
+                    }
+                } catch (WorldEditException e) {
+                    player.sendMessage("Error during schematic pasting: " + e.getMessage());
+                    throw new RuntimeException(e);
+                }
+            } catch (IOException e) {
+                player.sendMessage("Error loading schematic: " + e.getMessage());
+                throw e;
+            }
+
+
         }
     }
     public Location findSurfaceLocation(Location startLocation, int searchRadius) {
@@ -227,7 +272,7 @@ public class Cross implements Listener {
         // Ensure the block below is solid, and the current and above blocks are air
         return blockBelow.getBlock().getType().isSolid()
                 && blockAt.getBlock().getType().isSolid()
-                && blockAt.getBlock().getType().isFlammable()
+                && !blockAt.getBlock().getType().isBurnable()
                 && blockX.getBlock().getType().isSolid()
                 && blockY.getBlock().getType().isSolid()
                 && blockmX.getBlock().getType().isSolid()
