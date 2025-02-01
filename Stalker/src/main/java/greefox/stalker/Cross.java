@@ -3,27 +3,15 @@ package greefox.stalker;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
-import com.sk89q.worldedit.extent.Extent;
-import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
-import com.sk89q.worldedit.function.mask.BlockMask;
-import com.sk89q.worldedit.function.mask.BlockStateMask;
-import com.sk89q.worldedit.function.mask.BlockTypeMask;
-import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
-import com.sk89q.worldedit.world.block.BaseBlock;
-import com.sk89q.worldedit.world.block.BlockState;
-import com.sk89q.worldedit.world.block.BlockType;
-import com.sk89q.worldedit.world.block.BlockTypes;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -31,35 +19,19 @@ import org.bukkit.block.Barrel;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Cross implements Listener {
 
-    private final Stalker plugin;
-
     public Cross(Stalker plugin) {
-        this.plugin = plugin;
-    }
-
-
-
-    @EventHandler
-    private void temporaryActivate(PlayerInteractEvent event) throws IOException {
-        if (event.getPlayer().getInventory().getItemInMainHand().getType() == (Material.APPLE)){
-            com.sk89q.worldedit.world.World bWorld = new BukkitWorld(event.getPlayer().getWorld());
-            loadSchematic(event.getPlayer(), bWorld);
-        }
     }
 
     public File cross_top = new File(Stalker.getInstance().getDataFolder(), "structures/cross_top.schem");
@@ -67,7 +39,13 @@ public class Cross implements Listener {
     public File cross_bottom = new File(Stalker.getInstance().getDataFolder(), "structures/cross_bottom.schem");
     public File cross_tnt = new File(Stalker.getInstance().getDataFolder(), "structures/cross_tnt.schem");
 
-
+    @EventHandler
+    private void temporaryActivate(PlayerInteractEvent event) throws IOException {
+        if (event.getPlayer().getInventory().getItemInMainHand().getType() == (Material.APPLE)) {
+            com.sk89q.worldedit.world.World bWorld = new BukkitWorld(event.getPlayer().getWorld());
+            loadSchematic(event.getPlayer(), bWorld);
+        }
+    }
 
     private void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {
         ClipboardFormat format = ClipboardFormats.findByAlias("sponge.3");
@@ -210,6 +188,7 @@ public class Cross implements Listener {
 
         }
     }
+
     public Location findSurfaceLocation(Location startLocation, int searchRadius) {
         int startX = startLocation.getBlockX();
         int startZ = startLocation.getBlockZ();
