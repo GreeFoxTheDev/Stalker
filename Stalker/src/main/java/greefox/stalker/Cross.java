@@ -39,12 +39,11 @@ public class Cross implements Listener {
     public File cross_bottom = new File(Stalker.getInstance().getDataFolder(), "structures/cross_bottom.schem");
     public File cross_tnt = new File(Stalker.getInstance().getDataFolder(), "structures/cross_tnt.schem");
 
-    @EventHandler
-    private void temporaryActivate(PlayerInteractEvent event) throws IOException {
-        if (event.getPlayer().getInventory().getItemInMainHand().getType() == (Material.APPLE)) {
-            com.sk89q.worldedit.world.World bWorld = new BukkitWorld(event.getPlayer().getWorld());
-            loadSchematic(event.getPlayer(), bWorld);
-        }
+    public void spawnCross(Player player) throws IOException {
+
+            com.sk89q.worldedit.world.World bWorld = new BukkitWorld(player.getWorld());
+            loadSchematic(player, bWorld);
+
     }
 
     private void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {

@@ -51,7 +51,7 @@ public class DynamicLighting implements Listener {
             }
         };
 
-        task.runTaskTimer(plugin, 0L, 1L); // Runs every 2 ticks (0.1s)
+        task.runTaskTimer(plugin, 0L, 1L);
         lightTasks.put(player.getUniqueId(), task);
     }
 
@@ -77,17 +77,16 @@ public class DynamicLighting implements Listener {
 
         return switch (item.getType()) {
             case TORCH -> 14;
-            case LANTERN -> 15;
-            case SOUL_LANTERN, SOUL_TORCH -> 10;
-            case GLOWSTONE, REDSTONE_LAMP -> 15;
-            case CANDLE -> 3;  // Base candle light level
-            case CANDLE_CAKE -> 12;
+            case LANTERN, GLOWSTONE, SEA_LANTERN, LAVA_BUCKET -> 12;
+            case SOUL_LANTERN, SOUL_TORCH, REDSTONE_TORCH, REDSTONE_LAMP, JACK_O_LANTERN -> 10;
+            case CANDLE -> 3;
             default -> 0;
         };
     }
 
     private void createLight(Player player, Location location, int lightLevel) {
         if (location.getWorld() == null) return;
+        if (location.getWorld().getBlockAt(location).getType().isSolid()) return;
         World world = location.getWorld();
 
         Light light = (Light) Material.LIGHT.createBlockData();

@@ -12,21 +12,21 @@ import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
-import jdk.jfr.FlightRecorder;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.TileState;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Door;
-import org.bukkit.block.data.type.Light;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -42,27 +42,26 @@ import java.util.Random;
 
 public class SpawnStalker implements Listener {
 
+    private final Map<Player, Zombie> stalkerMap = new HashMap<>();
+    private final File dungeon_stalker = new File(Stalker.getInstance().getDataFolder(), "structures/dungeon_stalker.schem");
+
     public SpawnStalker(Stalker plugin) {
     }
-
-    private final Map<Player, Zombie> stalkerMap = new HashMap<>();
-
-    private File dungeon_stalker = new File(Stalker.getInstance().getDataFolder(), "structures/dungeon_stalker.schem");
-
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         spawnStalker(event.getPlayer());
     }
+
     @EventHandler
     public void onHuskTarget(EntityDamageByEntityEvent event) {
 
         if (event.getDamager().getType().equals(EntityType.HUSK) && Objects.requireNonNull(event.getEntity().getCustomName()).equalsIgnoreCase("stalker") && event.getEntity() instanceof Player) {
-            // Cancel the event to stop the Husk from attacking the player
             event.setCancelled(true);
         }
 
     }
+
     @EventHandler
     public void onPlayerTarget(EntityDamageByEntityEvent event) {
         if (event.getEntity().getType().equals(EntityType.HUSK) && event.getDamager() instanceof Player player && Objects.requireNonNull(event.getEntity().getCustomName()).equalsIgnoreCase("stalker")) {
@@ -80,6 +79,7 @@ public class SpawnStalker implements Listener {
 
         }
     }
+
     public void spawnStalker(Player target) {
         if (target == null || stalkerMap.containsKey(target)) return;
 
@@ -89,10 +89,10 @@ public class SpawnStalker implements Listener {
         stalker.setInvisible(true);
         stalker.setSilent(true);
         stalker.setCollidable(false);
-        stalker.setAI(true); // Enable AI for pathfinding
+        stalker.setAI(true);
         stalker.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, -1, 255, true, false));
 
-        stalkerMap.put(target, stalker); // Track the stalker
+        stalkerMap.put(target, stalker);
 
         DynamicLighting light = new DynamicLighting(Stalker.getInstance());
         light.startTracking(target);
@@ -100,11 +100,9 @@ public class SpawnStalker implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-
-
                 if (!target.isOnline() || stalker.isDead()) {
                     stalker.remove();
-                    stalkerMap.remove(target); // Clean up the map
+                    stalkerMap.remove(target);
                     cancel();
                     return;
                 }
@@ -113,147 +111,95 @@ public class SpawnStalker implements Listener {
                 Location stalkerLocation = stalker.getLocation();
                 double distance = stalkerLocation.distance(playerLocation);
 
-                // If too far, make the stalker teleport towards the player
                 if (distance > 40) {
                     Location teleport = findValidLocationAround(target);
-                    assert teleport != null;
-                    stalker.teleport(teleport);
-                }
-                if (distance > 15 && distance <= 40) {
+                    if (teleport != null) stalker.teleport(teleport);
+                } else if (distance > 15) {
                     stalker.setAI(true);
-                    stalker.setTarget(target); // Pathfind toward the player
-                } else if (distance <= 15) {
+                    stalker.setTarget(target);
+                } else {
                     stalker.setAI(false);
-                    stalker.setTarget(null); // Stop moving when close
-                    stalker.teleport(stalkerLocation.setDirection(playerLocation.subtract(stalkerLocation).toVector())); // Face the player
+                    stalker.setTarget(null);
+                    stalker.teleport(stalkerLocation.setDirection(playerLocation.subtract(stalkerLocation).toVector()));
                 }
 
                 World world = target.getWorld();
-                int randomX = target.getLocation().getBlockX() + (int) (Math.random() * 20 - 10); // Random X offset
-                int randomZ = target.getLocation().getBlockZ() + (int) (Math.random() * 20 - 10); // Random Z offset
-                int randomY = world.getHighestBlockYAt(randomX, randomZ) - 3; // Start 3 blocks below the surface
+                Location tunnelLocation = new Location(world,
+                        playerLocation.getBlockX() + (int) (Math.random() * 20 - 10),
+                        world.getHighestBlockYAt(playerLocation.getBlockX(), playerLocation.getBlockZ()) - 3,
+                        playerLocation.getBlockZ() + (int) (Math.random() * 20 - 10));
 
-                Location tunnelLocation = new Location(world, randomX, randomY, randomZ);
-
-                // Check if the chosen location is valid (not in air, not already in a cave)
                 if (isPlayerLookingAt(target, stalker)) {
-                    if (Math.random() < 0.0007) {
-                        if (world.getBlockAt(tunnelLocation).getType() != Material.AIR) {
-                            // Build the tunnel at the chosen location
-                            buildPredefinedTunnel(tunnelLocation);
-                        }
+                    if (Math.random() < 0.0007 && world.getBlockAt(tunnelLocation).getType() != Material.AIR) {
+                        buildPredefinedTunnel(tunnelLocation);
                     }
                     if (Math.random() < 0.05) {
-                        Location look = stalkerLocation.clone().add(0, 1, 0);
-                        stalker.getWorld().spawnParticle(Particle.LANDING_OBSIDIAN_TEAR, look, 100, 0d, 0d, 0d);
+                        stalker.getWorld().spawnParticle(Particle.LANDING_OBSIDIAN_TEAR, stalkerLocation.clone().add(0, 1, 0), 100);
                     }
                     if (Math.random() < 0.009) {
-                        Location targetLocation = target.getLocation();
-                        Vector direction = targetLocation.getDirection();
-
-                        // Calculate the location behind the player
-                        Location creeperLocation = targetLocation.clone().subtract(direction.multiply(4));
-                        creeperLocation.setY(targetLocation.getY()); // Ensure the same height
-
-                        // Spawn a creeper at the calculated location
-                        target.getWorld().spawn(creeperLocation, Creeper.class);
+                        Location creeperLocation = playerLocation.clone().subtract(playerLocation.getDirection().multiply(4));
+                        creeperLocation.setY(playerLocation.getY());
+                        world.spawn(creeperLocation, Creeper.class);
                     }
-                    if (Math.random() < 0.001) {
-                        Objects.requireNonNull(stalkerLocation.getWorld()).strikeLightning(stalkerLocation);
-
-                        com.sk89q.worldedit.world.World bWorld = new BukkitWorld(target.getWorld());
+                    if (Math.random() < 0.1) {
+                        world.strikeLightning(stalkerLocation);
                         try {
-                            loadSchematic(target, bWorld);
+                            loadSchematic(target, new BukkitWorld(world));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
                         target.sendMessage("3");
-
                     }
-
+                    if (Math.random() < 0.1) {
+                        try {
+                            new Cross(Stalker.getInstance()).spawnCross(target);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        world.strikeLightning(stalkerLocation);
+                    }
+                    if (Math.random() < 0.1) {
+                        world.setStorm(true);
+                    }
                 }
 
-
-                // Occasionally break blocks nearby
                 if (Math.random() < 0.008) {
-                    Location breakLocation = playerLocation.clone().add(
-                            Math.random() * 4 - 2, // Random x offset
-                            -1, // Slightly below player level
-                            Math.random() * 4 - 2 // Random z offset
-                    );
-                    Material blockType = breakLocation.getBlock().getType();
-                    if (blockType != Material.AIR && blockType.isBlock()) {
+                    Location breakLocation = playerLocation.clone().add(Math.random() * 4 - 2, -1, Math.random() * 4 - 2);
+                    if (breakLocation.getBlock().getType().isBlock()) {
                         breakLocation.getBlock().setType(Material.AIR);
-
-                        // Play the block's breaking sound
-//                        Sound breakSound = getBreakSound(blockType);
-//                        if (breakSound != null) {
-//                            target.playSound(breakLocation, breakSound, 1.0f, 1.0f);
-//                        }
                         target.playSound(breakLocation, Sound.BLOCK_GRASS_BREAK, 10.0f, 1.0f);
                     }
                 }
 
-                if (Math.random() < 0.01) {
-                    stalker.getWorld().playSound(stalker.getLocation(), Sound.ENTITY_PLAYER_BREATH, 1f, 0.2f);
-                }
-
-                if (Math.random() < 0.008) {
-
-                    stalker.getWorld().playSound(stalker.getLocation(), Sound.BLOCK_STONE_STEP, 1.0f, 1.0f);
-                }
-                if (Math.random() < 0.001) {
+                if (Math.random() < 0.01)
+                    stalker.getWorld().playSound(stalkerLocation, Sound.ENTITY_PLAYER_BREATH, 1f, 0.2f);
+                if (Math.random() < 0.008)
+                    stalker.getWorld().playSound(stalkerLocation, Sound.BLOCK_STONE_STEP, 1.0f, 1.0f);
+                if (Math.random() < 0.1) {
                     placeOakDoor(stalkerLocation);
-
-                    stalker.getWorld().playSound(stalker.getLocation(), Sound.BLOCK_WOODEN_DOOR_OPEN, 1.0f, 1.0f);
-
-
+                    stalker.getWorld().playSound(stalkerLocation, Sound.BLOCK_WOODEN_DOOR_OPEN, 1.0f, 1.0f);
                 }
-
-
             }
-
-
-        }.runTaskTimer(Stalker.getInstance(), 0L, 10L); // Repeat every 10 ticks
+        }.runTaskTimer(Stalker.getInstance(), 0L, 10L);
     }
 
     public boolean isPlayerLookingAt(Player player, Entity entity) {
-        Location eyeLocation = player.getEyeLocation();
-        Vector toEntity = entity.getLocation().toVector().subtract(eyeLocation.toVector()).normalize();
-        Vector playerDirection = eyeLocation.getDirection().normalize();
-        double angle = playerDirection.angle(toEntity);
-        return angle < Math.toRadians(30); // Check if within 30 degrees
+        Vector toEntity = entity.getLocation().toVector().subtract(player.getEyeLocation().toVector()).normalize();
+        return player.getEyeLocation().getDirection().normalize().angle(toEntity) < Math.toRadians(30);
     }
 
     private void buildPredefinedTunnel(Location location) {
-        World world = location.getWorld();
+        int size = new Random().nextInt(4) + 1;
 
-        // Tunnel dimensions (3x3)
-        Random random = new Random();
-        int number = random.nextInt(4) + 1;
-
-        // Materials for the tunnel
-        Material wallMaterial = Material.AIR;
-        Material floorMaterial = Material.STONE_BRICKS;
-        Material ceilingMaterial = Material.AIR;
-
-        // Loop through the tunnel area and place blocks
-        for (int x = -number / 2; x <= number / 2; x++) {
-            for (int y = 0; y < number; y++) {
-                for (int z = -number / 2; z <= number / 2; z++) {
+        for (int x = -size / 2; x <= size / 2; x++) {
+            for (int y = 0; y < size; y++) {
+                for (int z = -size / 2; z <= size / 2; z++) {
                     Location blockLocation = location.clone().add(x, y, z);
-
                     if (y == 0) {
-                        // Floor
-                        blockLocation.getBlock().setType(floorMaterial);
-                    } else if (y == number - 1) {
-                        // Ceiling
-                        blockLocation.getBlock().setType(ceilingMaterial);
-                    } else if (x == -number / 2 || x == number / 2 || z == -number / 2 || z == number / 2) {
-                        // Walls
-                        blockLocation.getBlock().setType(wallMaterial);
+                        blockLocation.getBlock().setType(Material.STONE_BRICKS);
+                    } else if (y == size - 1 || x == -size / 2 || x == size / 2 || z == -size / 2 || z == size / 2) {
+                        blockLocation.getBlock().setType(Material.AIR);
                     } else {
-                        // Air inside the tunnel (empty space)
                         blockLocation.getBlock().setType(Material.AIR);
                     }
                 }
@@ -261,42 +207,47 @@ public class SpawnStalker implements Listener {
         }
     }
 
+
     public void placeOakDoor(Location bottomBlockLocation) {
-        // Set the bottom block to OAK_DOOR
         Block bottomBlock = bottomBlockLocation.getBlock();
-        bottomBlock.setType(Material.OAK_DOOR);
+        Block topBlock = bottomBlockLocation.clone().add(0, 1, 0).getBlock();
+
+        // Set both blocks to OAK_DOOR before configuring their data
+        bottomBlock.setType(Material.OAK_DOOR, false);
+        topBlock.setType(Material.OAK_DOOR, false);
 
         // Configure the bottom part of the door
-        BlockData bottomBlockData = bottomBlock.getBlockData();
-        if (bottomBlockData instanceof org.bukkit.block.data.type.Door doorData) {
-            doorData.setHalf(Bisected.Half.BOTTOM); // This is the bottom part
-            doorData.setFacing(BlockFace.NORTH);    // Set the direction (change to your desired direction)
-            doorData.setHinge(org.bukkit.block.data.type.Door.Hinge.LEFT);     // Optional: hinge position
-            bottomBlock.setBlockData(doorData);
+        BlockData bottomData = bottomBlock.getBlockData();
+        if (bottomData instanceof org.bukkit.block.data.type.Door doorDataBottom) {
+            doorDataBottom.setHalf(Bisected.Half.BOTTOM);
+            doorDataBottom.setFacing(BlockFace.NORTH); // Adjust direction as needed
+            doorDataBottom.setHinge(Door.Hinge.LEFT);
+            doorDataBottom.setPowered(false); // Ensure door is not powered (optional)
+            bottomBlock.setBlockData(doorDataBottom, false);
         }
-
-        // Set the top block to OAK_DOOR
-        Block topBlock = bottomBlockLocation.clone().add(0, 1, 0).getBlock();
-        topBlock.setType(Material.OAK_DOOR);
 
         // Configure the top part of the door
-        BlockData topBlockData = topBlock.getBlockData();
-        if (topBlockData instanceof org.bukkit.block.data.type.Door doorData) {
-            doorData.setHalf(Bisected.Half.TOP); // This is the top part
-            doorData.setFacing(BlockFace.NORTH); // Same direction as the bottom
-            doorData.setHinge(Door.Hinge.LEFT);  // Same hinge position
-            topBlock.setBlockData(doorData);
+        BlockData topData = topBlock.getBlockData();
+        if (topData instanceof org.bukkit.block.data.type.Door doorDataTop) {
+            doorDataTop.setHalf(Bisected.Half.TOP);
+            doorDataTop.setFacing(BlockFace.NORTH);
+            doorDataTop.setHinge(Door.Hinge.LEFT);
+            doorDataTop.setPowered(false); // Ensure top isn't powered either
+            topBlock.setBlockData(doorDataTop, false);
         }
 
-
+        bottomBlock.setMetadata("custom_door", new FixedMetadataValue(Stalker.getInstance(), "special_door"));
+        topBlock.setMetadata("custom_door", new FixedMetadataValue(Stalker.getInstance(), "special_door"));
     }
+
+
 
     private Location findValidLocationAround(Player player) {
         Random random = new Random();
         Location playerLocation = player.getLocation();
-        int searchRadius = 8; // Radius around the player to search for valid spots
+        int searchRadius = 8;
 
-        for (int attempts = 0; attempts < 20; attempts++) { // Try up to 20 random locations
+        for (int attempts = 0; attempts < 20; attempts++) {
             int dx = random.nextInt(searchRadius * 2 + 1) - searchRadius;
             int dz = random.nextInt(searchRadius * 2 + 1) - searchRadius;
 
@@ -306,16 +257,15 @@ public class SpawnStalker implements Listener {
             }
         }
 
-        return null; // No valid location found
+        return null;
     }
 
 
     private boolean isValidLocation(Location location) {
-        Location blockBelow = location.clone().subtract(0, 1, 0); // Block below the target
-        Location blockAt = location.clone();                     // Target block
-        Location blockAbove = location.clone().add(0, 1, 0);     // Block above the target
+        Location blockBelow = location.clone().subtract(0, 1, 0);
+        Location blockAt = location.clone();
+        Location blockAbove = location.clone().add(0, 1, 0);
 
-        // Ensure the block below is solid, and the current and above blocks are air
         return blockBelow.getBlock().getType().isSolid()
                 && blockAt.getBlock().getType() == Material.AIR
                 && blockAbove.getBlock().getType() == Material.AIR;
@@ -329,7 +279,7 @@ public class SpawnStalker implements Listener {
 
             try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(bWorld, -1)) {
                 BlockVector3 pasteLocation = BlockVector3.at(player.getLocation().getBlockX(),
-                        player.getLocation().getBlockY()-50,
+                        player.getLocation().getBlockY() - 50,
                         player.getLocation().getBlockZ());
 
                 Operation operation = new ClipboardHolder(clipboard)
