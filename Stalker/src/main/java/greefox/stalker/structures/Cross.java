@@ -1,4 +1,4 @@
-package greefox.stalker;
+package greefox.stalker.structures;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -12,14 +12,13 @@ import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import greefox.stalker.Stalker;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Barrel;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -31,18 +30,17 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Cross implements Listener {
 
-    public Cross(Stalker plugin) {
-    }
-
     public File cross_top = new File(Stalker.getInstance().getDataFolder(), "structures/cross_top.schem");
     public File cross_middle = new File(Stalker.getInstance().getDataFolder(), "structures/cross_middle.schem");
     public File cross_bottom = new File(Stalker.getInstance().getDataFolder(), "structures/cross_bottom.schem");
     public File cross_tnt = new File(Stalker.getInstance().getDataFolder(), "structures/cross_tnt.schem");
+    public Cross(Stalker plugin) {
+    }
 
     public void spawnCross(Player player) throws IOException {
 
-            com.sk89q.worldedit.world.World bWorld = new BukkitWorld(player.getWorld());
-            loadSchematic(player, bWorld);
+        com.sk89q.worldedit.world.World bWorld = new BukkitWorld(player.getWorld());
+        loadSchematic(player, bWorld);
 
     }
 

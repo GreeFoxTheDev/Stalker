@@ -1,6 +1,6 @@
-package greefox.stalker;
+package greefox.stalker.events;
 
-import org.bukkit.Bukkit;
+import greefox.stalker.Stalker;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;

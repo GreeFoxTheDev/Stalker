@@ -1,12 +1,13 @@
 package greefox.stalker;
 
+import greefox.stalker.events.DynamicLighting;
+import greefox.stalker.events.Night;
+import greefox.stalker.events.OpenDoor;
+import greefox.stalker.events.SpawnStalker;
+import greefox.stalker.structures.Cross;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 
@@ -79,15 +80,12 @@ public class Stalker extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new Cross(this), this);
         getServer().getPluginManager().registerEvents(new SpawnStalker(this), this);
         getServer().getPluginManager().registerEvents(new DynamicLighting(this), this);
-        //getServer().getPluginManager().registerEvents(new AngryVillagerBuilder().setPlugin(this).createAngryVillager(), this);
         //getServer().getPluginManager().registerEvents(new AngryAnimals(this), this);
         getServer().getPluginManager().registerEvents(new OpenDoor(this), this);
 
 
 
-        for (Player target : Bukkit.getOnlinePlayers()) {
-            target.sendMessage("1");
-        }
+
 
     }
 

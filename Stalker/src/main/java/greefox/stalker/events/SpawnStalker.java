@@ -1,4 +1,4 @@
-package greefox.stalker;
+package greefox.stalker.events;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -12,11 +12,11 @@ import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import greefox.stalker.Stalker;
+import greefox.stalker.structures.Cross;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.TileState;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Door;
@@ -26,7 +26,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -50,7 +49,9 @@ public class SpawnStalker implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        spawnStalker(event.getPlayer());
+        for (Player target : Bukkit.getOnlinePlayers()) {
+            spawnStalker(target);;
+        }
     }
 
     @EventHandler
@@ -141,7 +142,7 @@ public class SpawnStalker implements Listener {
                         creeperLocation.setY(playerLocation.getY());
                         world.spawn(creeperLocation, Creeper.class);
                     }
-                    if (Math.random() < 0.1) {
+                    if (Math.random() < 0.009) {
                         world.strikeLightning(stalkerLocation);
                         try {
                             loadSchematic(target, new BukkitWorld(world));
@@ -150,7 +151,7 @@ public class SpawnStalker implements Listener {
                         }
                         target.sendMessage("3");
                     }
-                    if (Math.random() < 0.1) {
+                    if (Math.random() < 0.0001) {
                         try {
                             new Cross(Stalker.getInstance()).spawnCross(target);
                         } catch (IOException e) {
@@ -160,6 +161,7 @@ public class SpawnStalker implements Listener {
                     }
                     if (Math.random() < 0.1) {
                         world.setStorm(true);
+                        world.strikeLightningEffect(stalkerLocation);
                     }
                 }
 
@@ -171,13 +173,17 @@ public class SpawnStalker implements Listener {
                     }
                 }
 
-                if (Math.random() < 0.01)
+                if (Math.random() < 0.009)
                     stalker.getWorld().playSound(stalkerLocation, Sound.ENTITY_PLAYER_BREATH, 1f, 0.2f);
                 if (Math.random() < 0.008)
                     stalker.getWorld().playSound(stalkerLocation, Sound.BLOCK_STONE_STEP, 1.0f, 1.0f);
-                if (Math.random() < 0.1) {
+                if (Math.random() < 0.001) {
                     placeOakDoor(stalkerLocation);
                     stalker.getWorld().playSound(stalkerLocation, Sound.BLOCK_WOODEN_DOOR_OPEN, 1.0f, 1.0f);
+                }
+                if (Math.random() < 0.1) {
+                    Night night = new Night();
+                    night.startEffects(target);
                 }
             }
         }.runTaskTimer(Stalker.getInstance(), 0L, 10L);

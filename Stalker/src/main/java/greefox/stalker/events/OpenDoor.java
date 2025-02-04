@@ -1,16 +1,12 @@
-package greefox.stalker;
+package greefox.stalker.events;
 
+import greefox.stalker.Stalker;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.TileState;
-import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.type.Door;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class OpenDoor implements Listener {
 
@@ -24,10 +20,15 @@ public class OpenDoor implements Listener {
             if (clickedBlock.hasMetadata("custom_door")) {
                 String data = clickedBlock.getMetadata("custom_door").get(0).asString();
                 if ("special_door".equals(data)) {
-                    clickedBlock.getLocation().clone().add(0, 1, 0).getBlock().setType(Material.AIR);
-                    clickedBlock.setType(Material.AIR);
-                    clickedBlock.getLocation().clone().add(0, -1, 0).getBlock().setType(Material.AIR);
-                    clickedBlock.getWorld().createExplosion(clickedBlock.getLocation(), 4.0f);
+
+                    BukkitRunnable task = new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            clickedBlock.getLocation().getWorld().createExplosion(clickedBlock.getLocation(), 4.0f);
+                        }
+                    };
+
+                    task.runTaskLater(Stalker.getInstance(), 20L);
                 }
             }
         }
