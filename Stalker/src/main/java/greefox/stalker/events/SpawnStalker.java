@@ -1,38 +1,21 @@
 package greefox.stalker.events;
 
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
-import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
-import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.session.ClipboardHolder;
 import greefox.stalker.Stalker;
 import greefox.stalker.structures.Cross;
+import greefox.stalker.structures.Door;
+import greefox.stalker.structures.Dungeon;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +25,6 @@ import java.util.Random;
 public class SpawnStalker implements Listener {
 
     private final Map<Player, Zombie> stalkerMap = new HashMap<>();
-    private final File dungeon_stalker = new File(Stalker.getInstance().getDataFolder(), "structures/dungeon_stalker.schem");
 
     public SpawnStalker(Stalker plugin) {
     }
@@ -50,7 +32,7 @@ public class SpawnStalker implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         for (Player target : Bukkit.getOnlinePlayers()) {
-            spawnStalker(target);;
+            spawnStalker(target);
         }
     }
 
@@ -91,7 +73,8 @@ public class SpawnStalker implements Listener {
         stalker.setSilent(true);
         stalker.setCollidable(false);
         stalker.setAI(true);
-        stalker.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, -1, 255, true, false));
+        stalker.setInvulnerable(true);
+        //stalker.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, -1, 255, true, false));
 
         stalkerMap.put(target, stalker);
 
@@ -145,11 +128,11 @@ public class SpawnStalker implements Listener {
                     if (Math.random() < 0.009) {
                         world.strikeLightning(stalkerLocation);
                         try {
-                            loadSchematic(target, new BukkitWorld(world));
+                            Dungeon dungeon = new Dungeon();
+                            dungeon.loadSchematic(target, new BukkitWorld(world));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        target.sendMessage("3");
                     }
                     if (Math.random() < 0.0001) {
                         try {
@@ -161,7 +144,6 @@ public class SpawnStalker implements Listener {
                     }
                     if (Math.random() < 0.1) {
                         world.setStorm(true);
-                        world.strikeLightningEffect(stalkerLocation);
                     }
                 }
 
@@ -178,10 +160,11 @@ public class SpawnStalker implements Listener {
                 if (Math.random() < 0.008)
                     stalker.getWorld().playSound(stalkerLocation, Sound.BLOCK_STONE_STEP, 1.0f, 1.0f);
                 if (Math.random() < 0.001) {
-                    placeOakDoor(stalkerLocation);
+                    Door door = new Door();
+                    door.placeOakDoor(stalkerLocation);
                     stalker.getWorld().playSound(stalkerLocation, Sound.BLOCK_WOODEN_DOOR_OPEN, 1.0f, 1.0f);
                 }
-                if (Math.random() < 0.1) {
+                if (Math.random() < 0.5) {
                     Night night = new Night();
                     night.startEffects(target);
                 }
@@ -213,41 +196,6 @@ public class SpawnStalker implements Listener {
         }
     }
 
-
-    public void placeOakDoor(Location bottomBlockLocation) {
-        Block bottomBlock = bottomBlockLocation.getBlock();
-        Block topBlock = bottomBlockLocation.clone().add(0, 1, 0).getBlock();
-
-        // Set both blocks to OAK_DOOR before configuring their data
-        bottomBlock.setType(Material.OAK_DOOR, false);
-        topBlock.setType(Material.OAK_DOOR, false);
-
-        // Configure the bottom part of the door
-        BlockData bottomData = bottomBlock.getBlockData();
-        if (bottomData instanceof org.bukkit.block.data.type.Door doorDataBottom) {
-            doorDataBottom.setHalf(Bisected.Half.BOTTOM);
-            doorDataBottom.setFacing(BlockFace.NORTH); // Adjust direction as needed
-            doorDataBottom.setHinge(Door.Hinge.LEFT);
-            doorDataBottom.setPowered(false); // Ensure door is not powered (optional)
-            bottomBlock.setBlockData(doorDataBottom, false);
-        }
-
-        // Configure the top part of the door
-        BlockData topData = topBlock.getBlockData();
-        if (topData instanceof org.bukkit.block.data.type.Door doorDataTop) {
-            doorDataTop.setHalf(Bisected.Half.TOP);
-            doorDataTop.setFacing(BlockFace.NORTH);
-            doorDataTop.setHinge(Door.Hinge.LEFT);
-            doorDataTop.setPowered(false); // Ensure top isn't powered either
-            topBlock.setBlockData(doorDataTop, false);
-        }
-
-        bottomBlock.setMetadata("custom_door", new FixedMetadataValue(Stalker.getInstance(), "special_door"));
-        topBlock.setMetadata("custom_door", new FixedMetadataValue(Stalker.getInstance(), "special_door"));
-    }
-
-
-
     private Location findValidLocationAround(Player player) {
         Random random = new Random();
         Location playerLocation = player.getLocation();
@@ -277,27 +225,5 @@ public class SpawnStalker implements Listener {
                 && blockAbove.getBlock().getType() == Material.AIR;
     }
 
-    private void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {
 
-        ClipboardFormat format = ClipboardFormats.findByAlias("sponge");
-        try (ClipboardReader reader = format.getReader(new FileInputStream(dungeon_stalker))) {
-            Clipboard clipboard = reader.read();
-
-            try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(bWorld, -1)) {
-                BlockVector3 pasteLocation = BlockVector3.at(player.getLocation().getBlockX(),
-                        player.getLocation().getBlockY() - 50,
-                        player.getLocation().getBlockZ());
-
-                Operation operation = new ClipboardHolder(clipboard)
-                        .createPaste(editSession)
-                        .to(pasteLocation)
-                        .ignoreAirBlocks(false)
-                        .copyEntities(true)
-                        .build();
-                Operations.complete(operation);
-            } catch (WorldEditException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 }

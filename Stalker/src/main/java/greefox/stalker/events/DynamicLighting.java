@@ -51,7 +51,7 @@ public class DynamicLighting implements Listener {
             }
         };
 
-        task.runTaskTimer(plugin, 0L, 1L);
+        task.runTaskTimer(plugin, 0L, 0L);
         lightTasks.put(player.getUniqueId(), task);
     }
 

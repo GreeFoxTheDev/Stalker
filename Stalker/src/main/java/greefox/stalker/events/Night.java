@@ -8,26 +8,37 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class Night {
-
+    private BukkitRunnable task;
 
     public void startEffects(Player player) {
-        long time = player.getWorld().getTime();
-        player.sendMessage("1");
-        if (12300 < time && 23850 > time) {
-            player.sendMessage("10");
-
-            BukkitRunnable task = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-
-                        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 0, true, false));
-                        player.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 40, 0, true, false));
-                    }
-                }
-            };
-
-            task.runTaskTimer(Stalker.getInstance(), 0L, 20L);
+        if (task != null && !task.isCancelled()) {
+            return; // Prevent duplicate tasks
         }
+
+        task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                long time = player.getWorld().getTime();
+                boolean isNight = (time > 12300 && time < 23850);
+                boolean isUnderground = (player.getLocation().getY() < 40);
+
+                // If it's neither night nor underground, stop the effect
+                if (!isNight && !isUnderground) {
+                    this.cancel();
+                    task = null;
+                    return;
+                }
+
+                // Apply darkness immediately
+                for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                    onlinePlayer.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 40, 1, true, false));
+
+                    // Schedule blindness 10 ticks later
+                    Bukkit.getScheduler().runTaskLater(Stalker.getInstance(), () -> onlinePlayer.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 1, true, false)), 40L);
+                }
+            }
+        };
+
+        task.runTaskTimer(Stalker.getInstance(), 0L, 20L); // Runs every second
     }
 }
