@@ -15,48 +15,38 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 public class SpawnStalker implements Listener {
 
     private final Map<Player, Zombie> stalkerMap = new HashMap<>();
+    private final Random random = new Random();
 
-    public SpawnStalker(Stalker plugin) {
-    }
+    public SpawnStalker(Stalker plugin) {}
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        for (Player target : Bukkit.getOnlinePlayers()) {
-            spawnStalker(target);
-        }
+        Bukkit.getOnlinePlayers().forEach(this::spawnStalker);
     }
 
     @EventHandler
     public void onHuskTarget(EntityDamageByEntityEvent event) {
-
-        if (event.getDamager().getType().equals(EntityType.HUSK) && (event.getDamager().getCustomName() != null && (event.getDamager().getCustomName()).equalsIgnoreCase("stalker") && event.getEntity() instanceof Player)) {
+        Entity damager = event.getDamager();
+        if (damager.getType() == EntityType.HUSK
+                && "stalker".equalsIgnoreCase(damager.getCustomName())
+                && event.getEntity() instanceof Player) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onPlayerTarget(EntityDamageByEntityEvent event) {
-        if (event.getEntity().getType().equals(EntityType.HUSK) && event.getDamager() instanceof Player player && Objects.requireNonNull(event.getEntity().getCustomName()).equalsIgnoreCase("stalker")) {
+        if (!(event.getEntity() instanceof Husk stalker) || !(event.getDamager() instanceof Player player)) return;
+        if (!"stalker".equalsIgnoreCase(stalker.getCustomName())) return;
 
-
-            Location teleportLocation = findValidLocationAround(player);
-
-            if (teleportLocation != null) {
-                event.getEntity().teleport(teleportLocation);
-            } else {
-                return;
-            }
-            event.setCancelled(true);
-
-        }
+        Location teleportLocation = findValidLocationAround(player);
+        stalker.teleport(teleportLocation);
+        event.setCancelled(true);
     }
 
     public void spawnStalker(Player target) {
@@ -70,12 +60,9 @@ public class SpawnStalker implements Listener {
         stalker.setCollidable(false);
         stalker.setAI(true);
         stalker.setInvulnerable(true);
-        //stalker.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, -1, 255, true, false));
 
         stalkerMap.put(target, stalker);
-
-        DynamicLighting light = new DynamicLighting(Stalker.getInstance());
-        light.startTracking(target);
+        new DynamicLighting(Stalker.getInstance()).startTracking(target);
 
         new BukkitRunnable() {
             @Override
@@ -87,85 +74,75 @@ public class SpawnStalker implements Listener {
                     return;
                 }
 
-                Location playerLocation = target.getLocation();
-                Location stalkerLocation = stalker.getLocation();
-                double distance = stalkerLocation.distance(playerLocation);
+                double distance = stalker.getLocation().distance(target.getLocation());
 
                 if (distance > 40) {
-                    Location teleport = findValidLocationAround(target);
-                    stalker.teleport(teleport);
+                    stalker.teleport(findValidLocationAround(target));
                 } else if (distance > 15) {
                     stalker.setAI(true);
                     stalker.setTarget(target);
                 } else {
                     stalker.setAI(false);
                     stalker.setTarget(null);
-                    stalker.teleport(stalkerLocation.setDirection(playerLocation.subtract(stalkerLocation).toVector()));
+                    stalker.teleport(stalker.getLocation().setDirection(target.getLocation().subtract(stalker.getLocation()).toVector()));
                 }
-
-                World world = target.getWorld();
-                Location tunnelLocation = new Location(world,
-                        playerLocation.getBlockX() + (int) (Math.random() * 20 - 10),
-                        world.getHighestBlockYAt(playerLocation.getBlockX(), playerLocation.getBlockZ()) - 3,
-                        playerLocation.getBlockZ() + (int) (Math.random() * 20 - 10));
 
                 if (isPlayerLookingAt(target, stalker)) {
-                    if (Math.random() < 0.0007 && world.getBlockAt(tunnelLocation).getType() != Material.AIR) {
-                        buildPredefinedTunnel(tunnelLocation);
-                    }
-                    if (Math.random() < 0.05) {
-                        stalker.getWorld().spawnParticle(Particle.LANDING_OBSIDIAN_TEAR, stalkerLocation.clone().add(0, 1, 0), 100);
-                    }
-                    if (Math.random() < 0.009) {
-                        Location creeperLocation = playerLocation.clone().subtract(playerLocation.getDirection().multiply(4));
-                        creeperLocation.setY(playerLocation.getY());
-                        world.spawn(creeperLocation, Creeper.class);
-                    }
-                    if (Math.random() < 0.009) {
-                        world.strikeLightning(stalkerLocation);
-                        try {
-                            Dungeon dungeon = new Dungeon();
-                            dungeon.loadSchematic(target, new BukkitWorld(world));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    if (Math.random() < 0.0001) {
-                        try {
-                            new Cross(Stalker.getInstance()).spawnCross(target);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        world.strikeLightning(stalkerLocation);
-                    }
-                    if (Math.random() < 0.1) {
-                        world.setStorm(true);
-                    }
-                }
-
-                if (Math.random() < 0.008) {
-                    Location breakLocation = playerLocation.clone().add(Math.random() * 4 - 2, -1, Math.random() * 4 - 2);
-                    if (breakLocation.getBlock().getType().isBlock()) {
-                        breakLocation.getBlock().setType(Material.AIR);
-                        target.playSound(breakLocation, Sound.BLOCK_GRASS_BREAK, 10.0f, 1.0f);
-                    }
-                }
-
-                if (Math.random() < 0.009)
-                    stalker.getWorld().playSound(stalkerLocation, Sound.ENTITY_PLAYER_BREATH, 1f, 0.2f);
-                if (Math.random() < 0.008)
-                    stalker.getWorld().playSound(stalkerLocation, Sound.BLOCK_STONE_STEP, 1.0f, 1.0f);
-                if (Math.random() < 0.001) {
-                    Door door = new Door();
-                    door.placeOakDoor(stalkerLocation);
-                    stalker.getWorld().playSound(stalkerLocation, Sound.BLOCK_WOODEN_DOOR_OPEN, 1.0f, 1.0f);
-                }
-                if (Math.random() < 0.5) {
-                    Night night = new Night();
-                    night.startEffects(target);
+                    performSpookyEffects(target, stalker);
                 }
             }
         }.runTaskTimer(Stalker.getInstance(), 0L, 10L);
+    }
+
+    private void performSpookyEffects(Player target, Husk stalker) {
+        World world = target.getWorld();
+        Location stalkerLocation = stalker.getLocation();
+
+        if (random.nextDouble() < 0.05) {
+            world.spawnParticle(Particle.LANDING_OBSIDIAN_TEAR, stalkerLocation.clone().add(0, 1, 0), 100);
+        }
+        if (random.nextDouble() < 0.009) {
+            Location creeperLocation = target.getLocation().clone().subtract(target.getLocation().getDirection().multiply(4));
+            creeperLocation.setY(target.getLocation().getY());
+            world.spawn(creeperLocation, Creeper.class);
+        }
+        if (random.nextDouble() < 0.009) {
+            world.strikeLightning(stalkerLocation);
+            try {
+                new Dungeon().loadSchematic(target, new BukkitWorld(world));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (random.nextDouble() < 0.0001) {
+            try {
+                new Cross(Stalker.getInstance()).spawnCross(target);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            world.strikeLightning(stalkerLocation);
+        }
+        if (random.nextDouble() < 0.1) {
+            world.setStorm(true);
+        }
+        if (random.nextDouble() < 0.008) {
+            Location breakLocation = target.getLocation().clone().add(random.nextDouble() * 4 - 2, -1, random.nextDouble() * 4 - 2);
+            if (breakLocation.getBlock().getType().isBlock()) {
+                breakLocation.getBlock().setType(Material.AIR);
+                target.playSound(breakLocation, Sound.BLOCK_GRASS_BREAK, 10.0f, 1.0f);
+            }
+        }
+        if (random.nextDouble() < 0.009)
+            world.playSound(stalkerLocation, Sound.ENTITY_PLAYER_BREATH, 1f, 0.2f);
+        if (random.nextDouble() < 0.008)
+            world.playSound(stalkerLocation, Sound.BLOCK_STONE_STEP, 1.0f, 1.0f);
+        if (random.nextDouble() < 0.001) {
+            new Door().placeOakDoor(stalkerLocation);
+            world.playSound(stalkerLocation, Sound.BLOCK_WOODEN_DOOR_OPEN, 1.0f, 1.0f);
+        }
+        if (random.nextDouble() < 0.5) {
+            new Night().startEffects(target);
+        }
     }
 
     public boolean isPlayerLookingAt(Player player, Entity entity) {
@@ -173,51 +150,27 @@ public class SpawnStalker implements Listener {
         return player.getEyeLocation().getDirection().normalize().angle(toEntity) < Math.toRadians(30);
     }
 
-    private void buildPredefinedTunnel(Location location) {
-        int size = new Random().nextInt(4) + 1;
-
-        for (int x = -size / 2; x <= size / 2; x++) {
-            for (int y = 0; y < size; y++) {
-                for (int z = -size / 2; z <= size / 2; z++) {
-                    Location blockLocation = location.clone().add(x, y, z);
-                    if (y == 0) {
-                        blockLocation.getBlock().setType(Material.STONE_BRICKS);
-                    } else if (y == size - 1 || x == -size / 2 || x == size / 2 || z == -size / 2 || z == size / 2) {
-                        blockLocation.getBlock().setType(Material.AIR);
-                    } else {
-                        blockLocation.getBlock().setType(Material.AIR);
-                    }
-                }
-            }
-        }
-    }
-
     private Location findValidLocationAround(Player player) {
-        Random random = new Random();
         Location playerLocation = player.getLocation();
         int searchRadius = 8;
-        Location worst = playerLocation.clone().add(5, 0, 5);
+        Location fallbackLocation = playerLocation.clone().add(5, 0, 5);
 
         for (int attempts = 0; attempts < 50; attempts++) {
             int dx = random.nextInt(searchRadius * 2 + 1) - searchRadius;
             int dz = random.nextInt(searchRadius * 2 + 1) - searchRadius;
+            int dy = random.nextInt(3) - 1;
 
-            Location potentialLocation = playerLocation.clone().add(dx, 0, dz);
-
+            Location potentialLocation = playerLocation.clone().add(dx, dy, dz);
             if (isValidLocation(potentialLocation)) {
                 return potentialLocation;
             }
         }
-        return worst;
+        return fallbackLocation;
     }
 
     private boolean isValidLocation(Location location) {
-        Location blockBelow = location.clone().subtract(0, 1, 0);
-        Location blockAt = location.clone();
-        Location blockAbove = location.clone().add(0, 1, 0);
-
-        return blockBelow.getBlock().getType().isSolid()
-                && blockAt.getBlock().getType() == Material.AIR
-                && blockAbove.getBlock().getType() == Material.AIR;
+        return location.clone().subtract(0, 1, 0).getBlock().getType().isSolid()
+                && location.getBlock().getType() == Material.AIR
+                && location.clone().add(0, 1, 0).getBlock().getType() == Material.AIR;
     }
 }
