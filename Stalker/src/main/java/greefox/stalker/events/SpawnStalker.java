@@ -11,8 +11,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -39,10 +37,9 @@ public class SpawnStalker implements Listener {
     @EventHandler
     public void onHuskTarget(EntityDamageByEntityEvent event) {
 
-        if (event.getDamager().getType().equals(EntityType.HUSK) && Objects.requireNonNull(event.getEntity().getCustomName()).equalsIgnoreCase("stalker") && event.getEntity() instanceof Player) {
+        if (event.getDamager().getType().equals(EntityType.HUSK) && (event.getDamager().getCustomName() != null && (event.getDamager().getCustomName()).equalsIgnoreCase("stalker") && event.getEntity() instanceof Player)) {
             event.setCancelled(true);
         }
-
     }
 
     @EventHandler
@@ -53,7 +50,6 @@ public class SpawnStalker implements Listener {
             Location teleportLocation = findValidLocationAround(player);
 
             if (teleportLocation != null) {
-                // Teleport the entity to the valid location
                 event.getEntity().teleport(teleportLocation);
             } else {
                 return;
@@ -66,7 +62,7 @@ public class SpawnStalker implements Listener {
     public void spawnStalker(Player target) {
         if (target == null || stalkerMap.containsKey(target)) return;
 
-        Location spawnLocation = target.getLocation().clone().add(5, 0, 5);
+        Location spawnLocation = findValidLocationAround(target);
         Husk stalker = target.getWorld().spawn(spawnLocation, Husk.class);
         stalker.setCustomName("stalker");
         stalker.setInvisible(true);
@@ -97,7 +93,7 @@ public class SpawnStalker implements Listener {
 
                 if (distance > 40) {
                     Location teleport = findValidLocationAround(target);
-                    if (teleport != null) stalker.teleport(teleport);
+                    stalker.teleport(teleport);
                 } else if (distance > 15) {
                     stalker.setAI(true);
                     stalker.setTarget(target);
@@ -200,20 +196,20 @@ public class SpawnStalker implements Listener {
         Random random = new Random();
         Location playerLocation = player.getLocation();
         int searchRadius = 8;
+        Location worst = playerLocation.clone().add(5, 0, 5);
 
-        for (int attempts = 0; attempts < 20; attempts++) {
+        for (int attempts = 0; attempts < 50; attempts++) {
             int dx = random.nextInt(searchRadius * 2 + 1) - searchRadius;
             int dz = random.nextInt(searchRadius * 2 + 1) - searchRadius;
 
             Location potentialLocation = playerLocation.clone().add(dx, 0, dz);
+
             if (isValidLocation(potentialLocation)) {
                 return potentialLocation;
             }
         }
-
-        return null;
+        return worst;
     }
-
 
     private boolean isValidLocation(Location location) {
         Location blockBelow = location.clone().subtract(0, 1, 0);
@@ -224,6 +220,4 @@ public class SpawnStalker implements Listener {
                 && blockAt.getBlock().getType() == Material.AIR
                 && blockAbove.getBlock().getType() == Material.AIR;
     }
-
-
 }
