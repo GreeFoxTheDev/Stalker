@@ -12,8 +12,8 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import greefox.stalker.Stalker;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,8 +21,9 @@ import java.io.IOException;
 
 public class Dungeon {
 
+    public FileConfiguration config = Stalker.getInstance().getConfig();
     private final File dungeon_stalker = new File(Stalker.getInstance().getDataFolder(), "structures/dungeon_stalker.schem");
-    ;
+
 
     public void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {
 
@@ -32,7 +33,7 @@ public class Dungeon {
 
             try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(bWorld, -1)) {
                 BlockVector3 pasteLocation = BlockVector3.at(player.getLocation().getBlockX(),
-                        player.getLocation().getBlockY() - 50,
+                        player.getLocation().getBlockY() + config.getInt("structures.dungeon.depth"),
                         player.getLocation().getBlockZ());
 
                 Operation operation = new ClipboardHolder(clipboard)

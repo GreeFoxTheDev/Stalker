@@ -1,21 +1,20 @@
 package greefox.stalker;
 
 import greefox.stalker.events.DynamicLighting;
-import greefox.stalker.events.Night;
 import greefox.stalker.events.OpenDoor;
 import greefox.stalker.events.SpawnStalker;
 import greefox.stalker.structures.Cross;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-
 
 import java.io.File;
 
 public class Stalker extends JavaPlugin implements Listener {
 
     private static Stalker instance;
+    public FileConfiguration config = this.getConfig();
     public File cross_top = new File(getDataFolder(), "structures/cross_top.schem");
     public File cross_middle = new File(getDataFolder(), "structures/cross_middle.schem");
     public File cross_bottom = new File(getDataFolder(), "structures/cross_bottom.schem");
@@ -70,6 +69,10 @@ public class Stalker extends JavaPlugin implements Listener {
     public void onEnable() {
         instance = this;
 
+        config = getConfig();
+        reloadConfig();
+        saveDefaultConfig();
+
         create_dungeon_stalker();
         create_cross_top();
         create_cross_middle();
@@ -77,14 +80,12 @@ public class Stalker extends JavaPlugin implements Listener {
         create_cross_tnt();
 
 
+
         getServer().getPluginManager().registerEvents(new Cross(this), this);
         getServer().getPluginManager().registerEvents(new SpawnStalker(this), this);
         getServer().getPluginManager().registerEvents(new DynamicLighting(this), this);
         //getServer().getPluginManager().registerEvents(new AngryAnimals(this), this);
         getServer().getPluginManager().registerEvents(new OpenDoor(this), this);
-
-
-
 
 
     }

@@ -86,7 +86,7 @@ public class DynamicLighting implements Listener {
 
     private void createLight(Player player, Location location, int lightLevel) {
         if (location.getWorld() == null) return;
-        if (location.getWorld().getBlockAt(location).getType().isSolid()) return;
+        if (location.getWorld().getBlockAt(location).getType().isSolid() || location.getWorld().getBlockAt(location).getType().equals(Material.LAVA)) return;
         World world = location.getWorld();
 
         Light light = (Light) Material.LIGHT.createBlockData();

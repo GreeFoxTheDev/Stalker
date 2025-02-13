@@ -6,6 +6,7 @@ import greefox.stalker.structures.Cross;
 import greefox.stalker.structures.Door;
 import greefox.stalker.structures.Dungeon;
 import org.bukkit.*;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,6 +19,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class SpawnStalker implements Listener {
+    public FileConfiguration config = Stalker.getInstance().getConfig();
+
 
     private final Map<Player, Zombie> stalkerMap = new HashMap<>();
     private final Random random = new Random();
@@ -106,21 +109,28 @@ public class SpawnStalker implements Listener {
             creeperLocation.setY(target.getLocation().getY());
             world.spawn(creeperLocation, Creeper.class);
         }
-        if (random.nextDouble() < 0.009) {
-            world.strikeLightning(stalkerLocation);
-            try {
-                new Dungeon().loadSchematic(target, new BukkitWorld(world));
-            } catch (IOException e) {
-                e.printStackTrace();
+
+        if (config.getBoolean("structures.dungeon.enable")) {
+            if (random.nextDouble() < 0.009) {
+                world.strikeLightning(stalkerLocation);
+                try {
+                    new Dungeon().loadSchematic(target, new BukkitWorld(world));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        if (random.nextDouble() < 0.0001) {
-            try {
-                new Cross(Stalker.getInstance()).spawnCross(target);
-            } catch (IOException e) {
-                e.printStackTrace();
+
+        if (config.getBoolean("structures.cross.enable")) {
+
+            if (random.nextDouble() < 0.0001) {
+                try {
+                    new Cross(Stalker.getInstance()).spawnCross(target);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                world.strikeLightning(stalkerLocation);
             }
-            world.strikeLightning(stalkerLocation);
         }
         if (random.nextDouble() < 0.1) {
             world.setStorm(true);
@@ -136,12 +146,22 @@ public class SpawnStalker implements Listener {
             world.playSound(stalkerLocation, Sound.ENTITY_PLAYER_BREATH, 1f, 0.2f);
         if (random.nextDouble() < 0.008)
             world.playSound(stalkerLocation, Sound.BLOCK_STONE_STEP, 1.0f, 1.0f);
-        if (random.nextDouble() < 0.001) {
-            new Door().placeOakDoor(stalkerLocation);
-            world.playSound(stalkerLocation, Sound.BLOCK_WOODEN_DOOR_OPEN, 1.0f, 1.0f);
+        if (config.getBoolean("structures.door.enable")) {
+
+            if (random.nextDouble() < 0.001) {
+                new Door().placeOakDoor(stalkerLocation);
+                world.playSound(stalkerLocation, Sound.BLOCK_WOODEN_DOOR_OPEN, 1.0f, 1.0f);
+            }
         }
-        if (random.nextDouble() < 0.5) {
-            new Night().startEffects(target);
+        if (config.getBoolean("effects.night_effects.enable")) {
+            if (random.nextDouble() < 0.5) {
+                new Night().startEffects(target);
+            }
+        }
+        if (config.getBoolean("effects.cave_effects.enable")) {
+            if (random.nextDouble() < 0.5) {
+                new Night().startEffects(target);
+            }
         }
     }
 

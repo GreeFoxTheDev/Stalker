@@ -17,6 +17,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Barrel;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
@@ -29,11 +30,13 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Cross implements Listener {
+    public FileConfiguration config = Stalker.getInstance().getConfig();
 
     public File cross_top = new File(Stalker.getInstance().getDataFolder(), "structures/cross_top.schem");
     public File cross_middle = new File(Stalker.getInstance().getDataFolder(), "structures/cross_middle.schem");
     public File cross_bottom = new File(Stalker.getInstance().getDataFolder(), "structures/cross_bottom.schem");
     public File cross_tnt = new File(Stalker.getInstance().getDataFolder(), "structures/cross_tnt.schem");
+
     public Cross(Stalker plugin) {
     }
 
@@ -145,44 +148,47 @@ public class Cross implements Listener {
         }
 
 
-        double chance = 50.0;
+        boolean tnt = config.getBoolean("structures.cross.enable_tnt", true);
+        int chance = config.getInt("structures.cross.tnt_chance", 50);
+        if (tnt) {
 
-        double randomValue = ThreadLocalRandom.current().nextDouble(100);
+            double randomValue = ThreadLocalRandom.current().nextDouble(100);
 
-        if (randomValue < chance) {
+            if (randomValue < chance) {
 
-            //load tnt
-            try (ClipboardReader reader = format.getReader(new FileInputStream(cross_tnt))) {
-                Clipboard clipboard = reader.read();
+                //load tnt
+                try (ClipboardReader reader = format.getReader(new FileInputStream(cross_tnt))) {
+                    Clipboard clipboard = reader.read();
 
-                try (EditSession editSession = WorldEdit.getInstance()
-                        .getEditSessionFactory()
-                        .getEditSession(bWorld, -1)) {
+                    try (EditSession editSession = WorldEdit.getInstance()
+                            .getEditSessionFactory()
+                            .getEditSession(bWorld, -1)) {
 
-                    if (surface != null) {
+                        if (surface != null) {
 
-                        BlockVector3 surfaceVector = BlockVector3.at(surface.getBlockX(), surface.getBlockY(), surface.getBlockZ());
+                            BlockVector3 surfaceVector = BlockVector3.at(surface.getBlockX(), surface.getBlockY(), surface.getBlockZ());
 
-                        ClipboardHolder holder = new ClipboardHolder(clipboard);
+                            ClipboardHolder holder = new ClipboardHolder(clipboard);
 
-                        Operation operation = holder.createPaste(editSession)
-                                .to(surfaceVector)
-                                .ignoreAirBlocks(true)
-                                .copyEntities(false)
-                                .build();
+                            Operation operation = holder.createPaste(editSession)
+                                    .to(surfaceVector)
+                                    .ignoreAirBlocks(true)
+                                    .copyEntities(false)
+                                    .build();
 
-                        Operations.complete(operation);
+                            Operations.complete(operation);
+                        }
+                    } catch (WorldEditException e) {
+                        player.sendMessage("Error during schematic pasting: " + e.getMessage());
+                        throw new RuntimeException(e);
                     }
-                } catch (WorldEditException e) {
-                    player.sendMessage("Error during schematic pasting: " + e.getMessage());
-                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    player.sendMessage("Error loading schematic: " + e.getMessage());
+                    throw e;
                 }
-            } catch (IOException e) {
-                player.sendMessage("Error loading schematic: " + e.getMessage());
-                throw e;
+
+
             }
-
-
         }
     }
 
