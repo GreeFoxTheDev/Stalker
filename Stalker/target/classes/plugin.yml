@@ -6,3 +6,6 @@ commands:
   loadstructure:
     description: Load and give an NBT structure to the player.
     usage: /loadstructure
+  place:
+    description: Places a custom structures
+    usage: /place

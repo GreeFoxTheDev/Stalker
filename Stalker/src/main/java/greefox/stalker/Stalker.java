@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.Objects;
 
 public class Stalker extends JavaPlugin implements Listener {
 
@@ -86,6 +87,10 @@ public class Stalker extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new DynamicLighting(this), this);
         //getServer().getPluginManager().registerEvents(new AngryAnimals(this), this);
         getServer().getPluginManager().registerEvents(new OpenDoor(this), this);
+
+
+        Objects.requireNonNull(this.getCommand("place")).setExecutor(new PlaceStructure(this));
+        Objects.requireNonNull(this.getCommand("place")).setTabCompleter(new PlaceStructure(this));
 
 
     }

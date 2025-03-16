@@ -3,6 +3,7 @@ package greefox.stalker.structures;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
@@ -24,7 +25,16 @@ public class Dungeon {
     public FileConfiguration config = Stalker.getInstance().getConfig();
     private final File dungeon_stalker = new File(Stalker.getInstance().getDataFolder(), "structures/dungeon_stalker.schem");
 
+    public Dungeon(Stalker plugin) {
+    }
 
+
+    public void spawnDungeon(Player player) throws IOException {
+
+        com.sk89q.worldedit.world.World bWorld = new BukkitWorld(player.getWorld());
+        loadSchematic(player, bWorld);
+
+    }
     public void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {
 
         ClipboardFormat format = ClipboardFormats.findByAlias("sponge");

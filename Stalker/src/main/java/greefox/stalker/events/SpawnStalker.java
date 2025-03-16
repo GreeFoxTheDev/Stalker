@@ -17,6 +17,7 @@ import org.bukkit.util.Vector;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SpawnStalker implements Listener {
     public FileConfiguration config = Stalker.getInstance().getConfig();
@@ -109,12 +110,22 @@ public class SpawnStalker implements Listener {
             creeperLocation.setY(target.getLocation().getY());
             world.spawn(creeperLocation, Creeper.class);
         }
+        if (random.nextDouble() < 0.001) {
+            List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
+
+            if (players.isEmpty()) {
+            }
+
+            int randomIndex = ThreadLocalRandom.current().nextInt(players.size());
+            String name = players.get(randomIndex).getName();
+            Bukkit.broadcastMessage("<" + name + ">" + " ?");
+        }
 
         if (config.getBoolean("structures.dungeon.enable")) {
             if (random.nextDouble() < 0.009) {
                 world.strikeLightning(stalkerLocation);
                 try {
-                    new Dungeon().loadSchematic(target, new BukkitWorld(world));
+                    new Dungeon(Stalker.getInstance()).spawnDungeon(target);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
