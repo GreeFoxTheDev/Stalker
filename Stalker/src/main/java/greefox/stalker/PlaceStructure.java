@@ -1,10 +1,8 @@
 package greefox.stalker;
 
-import com.sk89q.worldedit.bukkit.BukkitWorld;
 import greefox.stalker.structures.Cross;
 import greefox.stalker.structures.Dungeon;
 import org.antlr.v4.runtime.misc.NotNull;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -38,21 +36,21 @@ public class PlaceStructure implements CommandExecutor, TabCompleter {
                             case "cross":
                                 try {
                                     new Cross(Stalker.getInstance()).spawnCross(player);
+                                    String loc = "[" + Cross.surface.getBlockX() + ", " + Cross.surface.getBlockY() + ", " + Cross.surface.getBlockZ() + "]";
+                                    player.sendMessage("Cross has been spawned at " + loc);
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
-                                String loc = Cross.surface.getBlockX() + "," + Cross.surface.getBlockY() + "," + Cross.surface.getBlockZ() + "lol";
-                                player.sendMessage("Cross has been spawned at " + loc);
-
+                                break;
                             case "dungeon":
                                 try {
                                     new Dungeon(Stalker.getInstance()).spawnDungeon(player);
+                                    String loc2 = "[" + Dungeon.location.getBlockX() + ", " + Dungeon.location.getBlockY() + ", " + Dungeon.location.getBlockZ() + "]";
+                                    player.sendMessage("Dungeon has been spawned at " + loc2);
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
-                                String loc2 = Dungeon.location.toString();
-                                player.sendMessage("Dungeon has been spawned at " + loc2);
-
+                                break;
                         }
                     }
                 }
