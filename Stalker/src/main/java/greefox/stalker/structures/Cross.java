@@ -46,6 +46,7 @@ public class Cross implements Listener {
         loadSchematic(player, bWorld);
 
     }
+    public static Location surface;
 
     private void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {
         ClipboardFormat format = ClipboardFormats.findByAlias("sponge.3");
@@ -53,7 +54,7 @@ public class Cross implements Listener {
             player.sendMessage("Error: Unsupported schematic format!");
             return;
         }
-        Location surface = findSurfaceLocation(player.getLocation(), 20);
+        surface = findSurfaceLocation(player.getLocation(), 20);
 
         try (ClipboardReader reader = format.getReader(new FileInputStream(cross_top))) {
             Clipboard clipboard = reader.read();
@@ -191,6 +192,10 @@ public class Cross implements Listener {
             }
         }
     }
+    public Location getLoc(){
+        return surface;
+    }
+
 
     public Location findSurfaceLocation(Location startLocation, int searchRadius) {
         int startX = startLocation.getBlockX();

@@ -1,0 +1,5 @@
+commands:
+  night/cave effects disable
+  dynamic lightning disable
+  place (door, dungeon, cross)
+  spawn stalker

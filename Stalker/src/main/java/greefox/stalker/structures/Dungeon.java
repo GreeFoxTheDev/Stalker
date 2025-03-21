@@ -13,6 +13,7 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import greefox.stalker.Stalker;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
@@ -28,6 +29,8 @@ public class Dungeon {
     public Dungeon(Stalker plugin) {
     }
 
+    public static Location location;
+
 
     public void spawnDungeon(Player player) throws IOException {
 
@@ -38,13 +41,17 @@ public class Dungeon {
     public void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {
 
         ClipboardFormat format = ClipboardFormats.findByAlias("sponge");
+        int dig = config.getInt("structures.dungeon.depth");
+        location = player.getLocation().add(0, dig, 0);
         try (ClipboardReader reader = format.getReader(new FileInputStream(dungeon_stalker))) {
             Clipboard clipboard = reader.read();
 
             try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(bWorld, -1)) {
                 BlockVector3 pasteLocation = BlockVector3.at(player.getLocation().getBlockX(),
-                        player.getLocation().getBlockY() + config.getInt("structures.dungeon.depth"),
+                        player.getLocation().getBlockY() + dig,
                         player.getLocation().getBlockZ());
+
+
 
                 Operation operation = new ClipboardHolder(clipboard)
                         .createPaste(editSession)
@@ -57,5 +64,8 @@ public class Dungeon {
                 throw new RuntimeException(e);
             }
         }
+    }
+    public Location getLoc(){
+        return location;
     }
 }

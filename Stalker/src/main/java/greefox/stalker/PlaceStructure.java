@@ -4,6 +4,7 @@ import com.sk89q.worldedit.bukkit.BukkitWorld;
 import greefox.stalker.structures.Cross;
 import greefox.stalker.structures.Dungeon;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -40,12 +41,18 @@ public class PlaceStructure implements CommandExecutor, TabCompleter {
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
+                                String loc = Cross.surface.getBlockX() + "," + Cross.surface.getBlockY() + "," + Cross.surface.getBlockZ() + "lol";
+                                player.sendMessage("Cross has been spawned at " + loc);
+
                             case "dungeon":
                                 try {
                                     new Dungeon(Stalker.getInstance()).spawnDungeon(player);
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
+                                String loc2 = Dungeon.location.toString();
+                                player.sendMessage("Dungeon has been spawned at " + loc2);
+
                         }
                     }
                 }
