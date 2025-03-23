@@ -3,6 +3,7 @@ package greefox.stalker;
 import greefox.stalker.structures.Cross;
 import greefox.stalker.structures.Dungeon;
 import greefox.stalker.structures.Refuge;
+import greefox.stalker.structures.Resort;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -19,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class PlaceStructure implements CommandExecutor, TabCompleter {
-    private static final String[] ARGS = {"cross", "dungeon", "refuge"};
+    private static final String[] ARGS = {"cross", "dungeon", "refuge", "resort"};
 
     Stalker plugin;
 
@@ -60,6 +61,16 @@ public class PlaceStructure implements CommandExecutor, TabCompleter {
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
+                                break;
+                            case "resort":
+                                try {
+                                    new Resort(Stalker.getInstance()).spawnResort(player);
+                                    String loc2 = "[" + Resort.surface.getBlockX() + ", " + Resort.surface.getBlockY() + ", " + Resort.surface.getBlockZ() + "]";
+                                    player.sendMessage("Last resort has been spawned at " + loc2);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+
                         }
                     }
                 }

@@ -22,6 +22,9 @@ public class Stalker extends JavaPlugin implements Listener {
     private File dungeon_stalker = new File(getDataFolder(), "structures/dungeon_stalker.schem");
     public File refuge_top = new File(getDataFolder(), "structures/refuge_top.schem");
     public File refuge_basement = new File(getDataFolder(), "structures/refuge_basement.schem");
+    public File resort_top = new File(getDataFolder(), "structures/resort_top.schem");
+    public File resort_bottom_1 = new File(getDataFolder(), "structures/resort_bottom_1.schem");
+    public File resort_bottom_2 = new File(getDataFolder(), "structures/resort_bottom_2.schem");
 
 
 
@@ -68,18 +71,28 @@ public class Stalker extends JavaPlugin implements Listener {
             saveResource("structures/cross_tnt.schem", false);
         }
     }
-    private void create_refuge_top() {
+    private void create_refuge() {
         refuge_top = new File(getDataFolder(), "structures/refuge_top.schem");
         if (!refuge_top.exists()) {
-            refuge_top.getParentFile().mkdirs();
             saveResource("structures/refuge_top.schem", false);
         }
-    }
-    private void create_refuge_basement() {
         refuge_basement = new File(getDataFolder(), "structures/refuge_basement.schem");
         if (!refuge_basement.exists()) {
-            refuge_basement.getParentFile().mkdirs();
             saveResource("structures/refuge_basement.schem", false);
+        }
+    }
+    private void create_resort(){
+        resort_top = new File(getDataFolder(), "structures/resort_top.schem");
+        resort_bottom_1 = new File(getDataFolder(), "structures/resort_bottom_1.schem");
+        resort_bottom_2 = new File(getDataFolder(), "structures/resort_bottom_2.schem");
+        if (!resort_top.exists()){
+            saveResource("structures/resort_top.schem", true);
+        }
+        if (!resort_bottom_1.exists()){
+            saveResource("structures/resort_bottom_1.schem", true);
+        }
+        if (!resort_bottom_2.exists()){
+            saveResource("structures/resort_bottom_2.schem", true);
         }
     }
 
@@ -96,8 +109,8 @@ public class Stalker extends JavaPlugin implements Listener {
         create_cross_middle();
         create_cross_bottom();
         create_cross_tnt();
-        create_refuge_top();
-        create_refuge_basement();
+        create_refuge();
+        create_resort();
 
 
         getServer().getPluginManager().registerEvents(new Cross(this), this);

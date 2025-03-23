@@ -36,6 +36,11 @@ public class FindLocation {
                 refuge.put(8, topLocation.clone().add(5, -1, -2));
                 refuge.put(9, topLocation.clone().add(-1, -1, -3));
 
+                Map<Integer, Location> resort = new HashMap<>(base);
+                resort.put(6, topLocation.clone().add(3, -2, 6));
+                resort.put(7, topLocation.clone().add(-1, -2, -3));
+
+
                 Map<Integer, Location> refuge_air = new HashMap<>();
                 refuge.put(1, topLocation.clone().add(0, 1, 1));
                 refuge.put(2, topLocation.clone().add(0, 2, 1));
@@ -47,6 +52,10 @@ public class FindLocation {
                     }
                 } else if (structureType.equalsIgnoreCase("refuge")){
                     if (isValidSurfaceLocation(refuge)){
+                        return topLocation.clone();
+                    }
+                } else if (structureType.equalsIgnoreCase("resort")){
+                    if (isValidSurfaceLocation(resort)){
                         return topLocation.clone();
                     }
                 }
