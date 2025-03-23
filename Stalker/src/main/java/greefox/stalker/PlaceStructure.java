@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class PlaceStructure implements CommandExecutor, TabCompleter {
-    private static final String[] ARGS = {"cross", "dungeon"};
+    private static final String[] ARGS = {"cross", "dungeon", "refuge"};
 
     Stalker plugin;
 

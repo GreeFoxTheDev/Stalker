@@ -44,6 +44,7 @@ public class Cross implements Listener {
 
         com.sk89q.worldedit.world.World bWorld = new BukkitWorld(player.getWorld());
         loadSchematic(player, bWorld);
+        addLoot();
 
     }
     public static Location surface;
@@ -192,8 +193,11 @@ public class Cross implements Listener {
             }
         }
     }
-    public Location getLoc(){
-        return surface;
+    private void addLoot(){
+
+        addLootToSpecificBarrel(surface, 4, -10 ,-2);
+        addLootToSpecificBarrel(surface, 5, -9 ,-2);
+        addLootToSpecificBarrel(surface, 5, -10 ,-1);
     }
 
 
@@ -233,27 +237,125 @@ public class Cross implements Listener {
                 && blockmY.getBlock().getType().isSolid();
     }
 
+//    private void addLootToSpecificBarrel(Location origin, int targetX, int targetY, int targetZ) {
+//        Location barrelLocation = origin.clone().add(targetX, targetY, targetZ);
+//        if (barrelLocation.getBlock().getType() == Material.BARREL) {
+//            Barrel barrel = (Barrel) barrelLocation.getBlock().getState();
+//            Inventory inventory = barrel.getInventory();
+//
+//            // Generate loot for the barrel
+//            Random random = new Random();
+//            for (int i = 0; i < inventory.getSize(); i++) {
+//                if (random.nextDouble() < 0.5) { // 50% chance to add an item
+//                    inventory.setItem(i, generateRandomLoot(random));
+//                }
+//            }
+//        }
+//        //barrelLocation.getBlock().setType(Material.GOLD_BLOCK);
+//    }
+//
+//    private ItemStack generateRandomLoot(Random random) {
+//        Material[] lootItems = {Material.DIAMOND, Material.GOLD_INGOT, Material.IRON_INGOT, Material.EMERALD, Material.ENCHANTED_BOOK, Material.APPLE, Material.GOLDEN_APPLE, Material.BREAD};
+//
+//        Material material = lootItems[random.nextInt(lootItems.length)];
+//        int amount = material.getMaxStackSize() > 1 ? random.nextInt(material.getMaxStackSize()) + 1 : 1;
+//        return new ItemStack(material, amount);
+//    }
+
+
+
     private void addLootToSpecificBarrel(Location origin, int targetX, int targetY, int targetZ) {
         Location barrelLocation = origin.clone().add(targetX, targetY, targetZ);
         if (barrelLocation.getBlock().getType() == Material.BARREL) {
             Barrel barrel = (Barrel) barrelLocation.getBlock().getState();
             Inventory inventory = barrel.getInventory();
 
-            // Generate loot for the barrel
             Random random = new Random();
             for (int i = 0; i < inventory.getSize(); i++) {
-                if (random.nextDouble() < 0.5) { // 50% chance to add an item
-                    inventory.setItem(i, generateRandomLoot(random));
+                if (inventory.getItem(i) == null || inventory.getItem(i).getType() == Material.AIR) {
+                    if (random.nextDouble() < 0.5) {
+                        inventory.setItem(i, generateRandomLoot(random));
+                    }
                 }
             }
         }
     }
 
     private ItemStack generateRandomLoot(Random random) {
-        Material[] lootItems = {Material.DIAMOND, Material.GOLD_INGOT, Material.IRON_INGOT, Material.EMERALD, Material.ENCHANTED_BOOK, Material.APPLE, Material.GOLDEN_APPLE, Material.BREAD};
+        LootItem[] common = {
+                new LootItem(Material.BREAD, 1, 3),
+                new LootItem(Material.APPLE, 1, 3),
+                new LootItem(Material.IRON_INGOT, 1, 2),
+                new LootItem(Material.REDSTONE, 1, 4)
+        };
 
-        Material material = lootItems[random.nextInt(lootItems.length)];
-        int amount = material.getMaxStackSize() > 1 ? random.nextInt(material.getMaxStackSize()) + 1 : 1;
-        return new ItemStack(material, amount);
+        LootItem[] uncommon = {
+                new LootItem(Material.GOLD_INGOT, 1, 2),
+                new LootItem(Material.GOLDEN_APPLE, 1, 1),
+        };
+
+        LootItem[] rare = {
+                new LootItem(Material.GOLDEN_APPLE, 1, 1),
+                new LootItem(Material.EXPERIENCE_BOTTLE, 1, 1),
+                new LootItem(Material.IRON_PICKAXE, 1, 1)
+        };
+        LootItem[] epic = {
+                new LootItem(Material.ENCHANTED_GOLDEN_APPLE, 1, 1),
+                new LootItem(Material.ECHO_SHARD, 2, 4),
+                new LootItem(Material.AMETHYST_SHARD, 1, 4),
+                new LootItem(Material.CLOCK, 1, 1)
+
+        };
+
+        double roll = random.nextDouble();
+        LootItem selectedLoot;
+
+        if (roll < 0.75) {
+            selectedLoot = common[random.nextInt(common.length)];
+        } else if (roll < 0.95) {
+            selectedLoot = uncommon[random.nextInt(uncommon.length)];
+        } else if (roll < 0.99){
+            selectedLoot = rare[random.nextInt(rare.length)];
+        } else {
+            selectedLoot = epic[random.nextInt(epic.length)];
+        }
+
+        return new ItemStack(selectedLoot.material, random.nextInt(selectedLoot.maxAmount) + 1);
     }
+
+
+//    private ItemStack generateRandomLoot(Random random) {
+//        Material[] commonItems = {Material.BREAD, Material.APPLE, Material.COOKED_BEEF};
+//        Material[] uncommonItems = {Material.GOLD_INGOT, Material.IRON_INGOT, Material.GOLDEN_APPLE};
+//        Material[] rareItems = {Material.DIAMOND, Material.EMERALD, Material.ENCHANTED_BOOK};
+//        Material[] epicItems = {Material.ENCHANTED_GOLDEN_APPLE};
+//
+//        double roll = random.nextDouble();
+//        Material selectedMaterial;
+//
+//        if (roll < 0.6) { // 60% chance for common
+//            selectedMaterial = commonItems[random.nextInt(commonItems.length)];
+//        } else if (roll < 0.9) { // 30% chance for uncommon
+//            selectedMaterial = uncommonItems[random.nextInt(uncommonItems.length)];
+//        } else if(roll < 0.97) { // 10% chance for rare
+//            selectedMaterial = rareItems[random.nextInt(rareItems.length)];
+//        } else {
+//            selectedMaterial = epicItems[random.nextInt(rareItems.length)];
+//        }
+//
+//        int amount = selectedMaterial.getMaxStackSize() > 1 ? random.nextInt(3) + 1 : 1;
+//        return new ItemStack(selectedMaterial, amount);
+//    }
+    private static class LootItem {
+        Material material;
+        int minAmount;
+        int maxAmount;
+
+        LootItem(Material material, int minAmount, int maxAmount) {
+            this.material = material;
+            this.minAmount = minAmount;
+            this.maxAmount = maxAmount;
+        }
+    }
+
 }
