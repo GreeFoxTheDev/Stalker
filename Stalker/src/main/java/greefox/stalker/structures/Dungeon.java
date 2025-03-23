@@ -23,14 +23,12 @@ import java.io.IOException;
 
 public class Dungeon {
 
-    public FileConfiguration config = Stalker.getInstance().getConfig();
+    public static Location location;
     private final File dungeon_stalker = new File(Stalker.getInstance().getDataFolder(), "structures/dungeon_stalker.schem");
+    public FileConfiguration config = Stalker.getInstance().getConfig();
 
     public Dungeon(Stalker plugin) {
     }
-
-    public static Location location;
-
 
     public void spawnDungeon(Player player) throws IOException {
 
@@ -38,6 +36,7 @@ public class Dungeon {
         loadSchematic(player, bWorld);
 
     }
+
     public void loadSchematic(Player player, com.sk89q.worldedit.world.World bWorld) throws IOException {
 
         ClipboardFormat format = ClipboardFormats.findByAlias("sponge");
@@ -47,25 +46,14 @@ public class Dungeon {
             Clipboard clipboard = reader.read();
 
             try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(bWorld, -1)) {
-                BlockVector3 pasteLocation = BlockVector3.at(player.getLocation().getBlockX(),
-                        player.getLocation().getBlockY() + dig,
-                        player.getLocation().getBlockZ());
+                BlockVector3 pasteLocation = BlockVector3.at(player.getLocation().getBlockX(), player.getLocation().getBlockY() + dig, player.getLocation().getBlockZ());
 
 
-
-                Operation operation = new ClipboardHolder(clipboard)
-                        .createPaste(editSession)
-                        .to(pasteLocation)
-                        .ignoreAirBlocks(false)
-                        .copyEntities(true)
-                        .build();
+                Operation operation = new ClipboardHolder(clipboard).createPaste(editSession).to(pasteLocation).ignoreAirBlocks(false).copyEntities(true).build();
                 Operations.complete(operation);
             } catch (WorldEditException e) {
                 throw new RuntimeException(e);
             }
         }
-    }
-    public Location getLoc(){
-        return location;
     }
 }

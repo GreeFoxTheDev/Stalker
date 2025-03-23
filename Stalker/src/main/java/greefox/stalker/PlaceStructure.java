@@ -2,6 +2,7 @@ package greefox.stalker;
 
 import greefox.stalker.structures.Cross;
 import greefox.stalker.structures.Dungeon;
+import greefox.stalker.structures.Refuge;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +52,14 @@ public class PlaceStructure implements CommandExecutor, TabCompleter {
                                     throw new RuntimeException(e);
                                 }
                                 break;
+                            case "refuge":
+                                try {
+                                    new Refuge(Stalker.getInstance()).spawnRefuge(player);
+                                    String loc2 = "[" + Refuge.surface.getBlockX() + ", " + Refuge.surface.getBlockY() + ", " + Refuge.surface.getBlockZ() + "]";
+                                    player.sendMessage("Refuge has been spawned at " + loc2);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
                         }
                     }
                 }

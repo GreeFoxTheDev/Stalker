@@ -3,3 +3,4 @@ commands:
   dynamic lightning disable
   place (door, dungeon, cross)
   spawn stalker
+  maybe add roots to some of the free slots in chests

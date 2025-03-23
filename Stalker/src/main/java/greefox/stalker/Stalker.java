@@ -4,7 +4,6 @@ import greefox.stalker.events.DynamicLighting;
 import greefox.stalker.events.OpenDoor;
 import greefox.stalker.events.SpawnStalker;
 import greefox.stalker.structures.Cross;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,6 +20,10 @@ public class Stalker extends JavaPlugin implements Listener {
     public File cross_bottom = new File(getDataFolder(), "structures/cross_bottom.schem");
     public File cross_tnt = new File(getDataFolder(), "structures/cross_tnt.schem");
     private File dungeon_stalker = new File(getDataFolder(), "structures/dungeon_stalker.schem");
+    public File refuge_top = new File(getDataFolder(), "structures/refuge_top.schem");
+    public File refuge_basement = new File(getDataFolder(), "structures/refuge_basement.schem");
+
+
 
     public static Stalker getInstance() {
         return instance;
@@ -65,6 +68,20 @@ public class Stalker extends JavaPlugin implements Listener {
             saveResource("structures/cross_tnt.schem", false);
         }
     }
+    private void create_refuge_top() {
+        refuge_top = new File(getDataFolder(), "structures/refuge_top.schem");
+        if (!refuge_top.exists()) {
+            refuge_top.getParentFile().mkdirs();
+            saveResource("structures/refuge_top.schem", false);
+        }
+    }
+    private void create_refuge_basement() {
+        refuge_basement = new File(getDataFolder(), "structures/refuge_basement.schem");
+        if (!refuge_basement.exists()) {
+            refuge_basement.getParentFile().mkdirs();
+            saveResource("structures/refuge_basement.schem", false);
+        }
+    }
 
     @Override
     public void onEnable() {
@@ -79,7 +96,8 @@ public class Stalker extends JavaPlugin implements Listener {
         create_cross_middle();
         create_cross_bottom();
         create_cross_tnt();
-
+        create_refuge_top();
+        create_refuge_basement();
 
 
         getServer().getPluginManager().registerEvents(new Cross(this), this);
