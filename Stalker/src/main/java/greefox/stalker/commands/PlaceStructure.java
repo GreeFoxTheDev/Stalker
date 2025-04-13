@@ -1,10 +1,10 @@
-package greefox.stalker;
+package greefox.stalker.commands;
 
+import greefox.stalker.Stalker;
 import greefox.stalker.structures.Cross;
 import greefox.stalker.structures.Dungeon;
 import greefox.stalker.structures.Refuge;
 import greefox.stalker.structures.Resort;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -29,7 +29,7 @@ public class PlaceStructure implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (label.equalsIgnoreCase("place")) {
             if (args.length == 1) {
                 if (sender instanceof Player player) {
@@ -70,20 +70,17 @@ public class PlaceStructure implements CommandExecutor, TabCompleter {
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
-
                         }
                     }
                 }
             }
-
         }
         return true;
-
     }
 
     @Nullable
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 
 
         final List<String> structures = new ArrayList<>();

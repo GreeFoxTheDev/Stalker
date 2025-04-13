@@ -1,5 +1,7 @@
 package greefox.stalker;
 
+import greefox.stalker.commands.PlaceStructure;
+import greefox.stalker.commands.StalkerCommand;
 import greefox.stalker.events.DynamicLighting;
 import greefox.stalker.events.OpenDoor;
 import greefox.stalker.events.SpawnStalker;
@@ -19,7 +21,7 @@ public class Stalker extends JavaPlugin implements Listener {
     public File cross_middle = new File(getDataFolder(), "structures/cross_middle.schem");
     public File cross_bottom = new File(getDataFolder(), "structures/cross_bottom.schem");
     public File cross_tnt = new File(getDataFolder(), "structures/cross_tnt.schem");
-    private File dungeon_stalker = new File(getDataFolder(), "structures/dungeon_stalker.schem");
+    public File dungeon_stalker = new File(getDataFolder(), "structures/dungeon_stalker.schem");
     public File refuge_top = new File(getDataFolder(), "structures/refuge_top.schem");
     public File refuge_basement = new File(getDataFolder(), "structures/refuge_basement.schem");
     public File resort_top = new File(getDataFolder(), "structures/resort_top.schem");
@@ -35,42 +37,28 @@ public class Stalker extends JavaPlugin implements Listener {
     private void create_dungeon_stalker() {
         dungeon_stalker = new File(getDataFolder(), "structures/dungeon_stalker.schem");
         if (!dungeon_stalker.exists()) {
-            dungeon_stalker.getParentFile().mkdirs();
             saveResource("structures/dungeon_stalker.schem", false);
         }
     }
-
-    private void create_cross_top() {
+    private void create_cross(){
         cross_top = new File(getDataFolder(), "structures/cross_top.schem");
+        cross_middle = new File(getDataFolder(), "structures/cross_middle.schem");
+        cross_bottom = new File(getDataFolder(), "structures/cross_bottom.schem");
+        cross_tnt = new File(getDataFolder(), "structures/cross_tnt.schem");
         if (!cross_top.exists()) {
-            cross_top.getParentFile().mkdirs();
             saveResource("structures/cross_top.schem", false);
         }
-    }
-
-    private void create_cross_middle() {
-        cross_middle = new File(getDataFolder(), "structures/cross_middle.schem");
         if (!cross_middle.exists()) {
-            cross_middle.getParentFile().mkdirs();
             saveResource("structures/cross_middle.schem", false);
         }
-    }
-
-    private void create_cross_bottom() {
-        cross_bottom = new File(getDataFolder(), "structures/cross_bottom.schem");
         if (!cross_bottom.exists()) {
-            cross_bottom.getParentFile().mkdirs();
             saveResource("structures/cross_bottom.schem", false);
         }
-    }
-
-    private void create_cross_tnt() {
-        cross_tnt = new File(getDataFolder(), "structures/cross_tnt.schem");
         if (!cross_tnt.exists()) {
-            cross_tnt.getParentFile().mkdirs();
             saveResource("structures/cross_tnt.schem", false);
         }
     }
+
     private void create_refuge() {
         refuge_top = new File(getDataFolder(), "structures/refuge_top.schem");
         if (!refuge_top.exists()) {
@@ -105,10 +93,7 @@ public class Stalker extends JavaPlugin implements Listener {
         saveDefaultConfig();
 
         create_dungeon_stalker();
-        create_cross_top();
-        create_cross_middle();
-        create_cross_bottom();
-        create_cross_tnt();
+        create_cross();
         create_refuge();
         create_resort();
 
@@ -122,6 +107,9 @@ public class Stalker extends JavaPlugin implements Listener {
 
         Objects.requireNonNull(this.getCommand("place")).setExecutor(new PlaceStructure(this));
         Objects.requireNonNull(this.getCommand("place")).setTabCompleter(new PlaceStructure(this));
+
+        Objects.requireNonNull(this.getCommand("stalker")).setExecutor(new StalkerCommand(this));
+        Objects.requireNonNull(this.getCommand("stalker")).setTabCompleter(new StalkerCommand(this));
 
 
     }

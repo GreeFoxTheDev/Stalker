@@ -3,9 +3,9 @@ version: '1.0-SNAPSHOT'
 main: greefox.stalker.Stalker
 api-version: '1.21'
 commands:
-  loadstructure:
-    description: Load and give an NBT structure to the player.
-    usage: /loadstructure
   place:
     description: Places a custom structures
-    usage: /place
+    usage: /place <structure>
+  stalker:
+    description: Kills, spawns or shows a Stalker.
+    usage: /stalker <action>

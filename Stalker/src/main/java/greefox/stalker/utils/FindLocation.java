@@ -1,6 +1,7 @@
 package greefox.stalker.utils;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.enginehub.linbus.stream.token.LinToken;
 
@@ -16,6 +17,7 @@ public class FindLocation {
         for (int x = -searchRadius; x <= searchRadius; x++) {
             for (int z = -searchRadius; z <= searchRadius; z++) {
 
+                assert world != null;
                 Location topLocation = world.getHighestBlockAt(startX + x, startZ + z).getLocation();
 
                 Map<Integer, Location> base = new HashMap<>();
@@ -67,10 +69,9 @@ public class FindLocation {
 
     private static boolean isValidSurfaceLocation(Map<Integer, Location> blocks) {
         for (Location loc : blocks.values()) {
-            if (loc.getBlock().getType().isSolid()) {
+            if (loc.getBlock().getType().isSolid() && !loc.getBlock().getType().equals(Material.WATER)) {
                 if (!loc.getBlock().getType().isBurnable()) {
                     return true;
-
                 }
             }
         }
